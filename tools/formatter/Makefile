@@ -15,6 +15,7 @@ ifeq ($(GENERATE_ASM), 1)
 endif
 
 all: $(BIN)/format-mbr $(BIN)/format-gpt $(ASMS)
+	
 
 $(BIN)/format-mbr: $(MBR_OBJS) 
 	@echo
