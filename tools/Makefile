@@ -2,14 +2,14 @@ define relative
 	$(shell realpath -s --relative-to="$(ROOT_PATH)" $(1))
 endef
 
-SRC := $(call relative, $(ROOT_PATH)/tools)
-OBJ := $(call relative, $(OBJ)/tools)
+OBJ := $(OBJ)/tools
 
-export SRC OBJ
+export OBJ
 
-.PHONY: all
 
 TOOLS := formatter
+
+.PHONY: all $(TOOLS)
 
 all: $(TOOLS)
 

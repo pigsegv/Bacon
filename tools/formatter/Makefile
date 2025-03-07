@@ -1,44 +1,43 @@
-PROJ_SRC := $(SRC)/formatter
-PROJ_OBJ := $(OBJ)/formatter
-PROJ_BIN := $(BIN)
-PROJ_INCLUDE := $(ROOT_PATH)/$(INCLUDE)
+OBJ := $(OBJ)/formatter
 
-CFLAGS  += -Wall -Wextra -ggdb3 -std=gnu23 -fPIC -O0
-LDFLAGS +=
+CFLAGS += -Wall -Wextra -ggdb3 -std=gnu23 -O0
+LDFLAGS += 
 
-TARGETS := $(PROJ_BIN)/format-mbr $(PROJ_BIN)/format-gpt
+MBR_SRCS := mbr.c
+MBR_OBJS := $(patsubst %.c, $(OBJ)/%.o, $(MBR_SRCS))
 
-SRCS := $(shell find $(PROJ_SRC) -type  f -name "*.c")
-OBJS := $(patsubst $(PROJ_SRC)/%.c, $(PROJ_OBJ)/%.o, $(SRCS))
-DEPS := $(patsubst $(PROJ_SRC)/%.c, $(PROJ_OBJ)/%.d, $(SRCS))
+GPT_SRCS := gpt.c
+GPT_OBJS := $(patsubst %.c, $(OBJ)/%.o, $(GPT_SRCS))
+DEPS := $(patsubst %.c, $(OBJ)/%.d, $(MBR_SRCS) $(GPT_SRCS))
 
 ifeq ($(GENERATE_ASM), 1)
-	ASMS := $(patsubst $(PROJ_SRC)/%.c, $(PROJ_OBJ)/%.s, $(SRCS))
+	ASMS := $(patsubst %.c, $(OBJ)/%.s, $(MBR_SRCS) $(GPT_SRCS))
 endif
 
-INCLUDES := $(shell find $(PROJ_INCLUDE) -type f -name "*.h")
-INCLUDES += $(shell find $(PROJ_SRC) -type f -name "*.h")
-INCLUDES += $(shell find $(ROOT_PATH)/$(SRC)/util -type f -name "*.h")
+all: $(BIN)/format-mbr $(BIN)/format-gpt $(ASMS)
 
-all: $(TARGET)
-
-$(TARGET): $(OBJS) $(ASMS)
+$(BIN)/format-mbr: $(MBR_OBJS) 
 	@echo
 	@echo building $(TARGET)
-	@$(LD) $(CFLAGS) -shared $(OBJS) -o $@ $(LDFLAGS)
+	@$(LD) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+	@echo built $(TARGET)
+
+$(BIN)/format-gpt: $(GPT_OBJS) 
+	@echo
+	@echo building $(TARGET)
+	@$(LD) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 	@echo built $(TARGET)
 
 -include $(DEPS)
 
-$(PROJ_OBJ)/%.o: $(PROJ_SRC)/%.c
+$(OBJ)/%.o: %.c
 	@echo building $@
 	@$(CC) $(CFLAGS) -MD -MP -c $< -o $@
 	@echo built $@
 	@echo
 
-$(PROJ_OBJ)/%.s: $(PROJ_SRC)/%.c
+$(OBJ)/%.s: %.c
 	@echo Generating assembly $@
-	@$(CC) $(CFLAGS) -S -masm=intel $< -o $@
+	@$(CC) $(CFLAGS) -S $< -o $@
 	@echo Generated $@
 	@echo
-

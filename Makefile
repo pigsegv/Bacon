@@ -32,14 +32,8 @@ GENERATE_ASM := 1
 
 export PLATFORM CC LD SRC OBJ BIN INCLUDE EXTERNAL_DIR EXTERNAL_LIBS_DIR CFLAGS LDFLAGS GENERATE_ASM 
 
-# OBJ_DIRS += $(shell find $(SRC) -type d)
-# OBJ_DIRS += $(shell find $(ROOT_PATH)/tools -type d)
-
 OBJ_DIRS += $(call get_dirs, $(SRC))
 OBJ_DIRS += $(call get_dirs, $(ROOT_PATH)/tools)
-
-# I really should be using cmake or meson or something like that
-#OBJ_DIRS := $(foreach dir, $(patsubst %, $(OBJ)/%, $(foreach obj_dir, $(OBJ_DIRS), $(shell realpath -s --relative-to="$(ROOT_PATH)" $(obj_dir)))), $(shell realpath -s --relative-to="$(ROOT_PATH)" $(dir)))
 
 OBJ_DIRS := $(call relative_foreach, $(patsubst %, $(OBJ)/%, $(call relative_foreach, $(OBJ_DIRS))))
 
