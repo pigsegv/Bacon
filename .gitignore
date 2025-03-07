@@ -55,4 +55,5 @@ dkms.conf
 bin/
 obj/
 tags
+./.ccls
 
