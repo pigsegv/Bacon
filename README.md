@@ -1,1 +1,2 @@
-# StupidityOS
+# Bacon
+A hobby OS
