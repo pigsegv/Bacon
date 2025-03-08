@@ -39,6 +39,6 @@ $(OBJ)/%.o: %.c
 
 $(OBJ)/%.s: %.c
 	@echo Generating assembly $@
-	@$(CC) $(CFLAGS) -S $< -o $@
+	@$(CC) $(CFLAGS) -S -masm=intel $< -o $@
 	@echo Generated $@
 	@echo

@@ -56,4 +56,6 @@ bin/
 obj/
 tags
 .ccls
+*.bin
+
 

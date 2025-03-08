@@ -25,7 +25,7 @@ INCLUDE := $(ROOT_PATH)/include
 EXTERNAL_DIR := $(ROOT_PATH)/external
 EXTERNAL_LIBS_DIR := $(ROOT_PATH)/external-libs
 
-CFLAGS := -I$(SRC) -I$(INCLUDE)
+CFLAGS := -I$(SRC) -I$(INCLUDE) -I$(ROOT_PATH)
 LDFLAGS := -Wl,-rpath=$(BIN) -L$(BIN)
 
 GENERATE_ASM := 1
@@ -39,7 +39,7 @@ OBJ_DIRS := $(call relative_foreach, $(patsubst %, $(OBJ)/%, $(call relative_for
 
 CREATE_DIR_COMMAND := ./dirs.sh
 
-PROJECTS := tools
+PROJECTS := tools 
 
 .PHONY: all dirs clean external run $(PROJECTS)
 
@@ -64,3 +64,4 @@ dirs:
 clean:
 	-@rm -rf $(OBJ)
 	-@rm -rf $(BIN)
+

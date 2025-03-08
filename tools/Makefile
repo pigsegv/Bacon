@@ -17,5 +17,3 @@ all: $(TOOLS)
 
 formatter:
 	@$(MAKE) -C $(ROOT_PATH)/tools/formatter
-
-
