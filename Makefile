@@ -42,9 +42,14 @@ CREATE_DIR_COMMAND := ./dirs.sh
 
 PROJECTS := tools bootloader create_disk
 
-.PHONY: all dirs clean external run $(PROJECTS)
+.PHONY: all dirs clean external run projects $(PROJECTS)
 
-all: dirs $(PROJECTS)
+
+all: $(PROJECTS)
+
+# This rule runs first due to the include
+create_dirs: dirs
+-include create_dirs
 
 # ---------------------- PROJECTS ----------------------
 
@@ -52,11 +57,10 @@ tools:
 	@$(MAKE) -C $(ROOT_PATH)/tools
 
 bootloader:
-	@$(MAKE) -C $(ROOT_PATH)/src/bootloader BOOTSTRAP_TARGET=$(BIN)/bootstrap.bin
+	@$(MAKE) -C $(ROOT_PATH)/src/bootloader BOOTSECTOR_TARGET=$(BIN)/bootsector.bin
 
 create_disk: tools bootloader
-	./create_disk.sh $(BIN)/bootstrap.bin $(BIN)/disk.iso $(BIN)/fs-image.img
-
+	./create_disk.sh $(BIN)/bootsector.bin $(BIN)/disk.iso $(BIN)/fs-image.img
 
 # ---------------------- UTILITY ----------------------
 

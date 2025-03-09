@@ -11,9 +11,9 @@ ifeq ($(GENERATE_ASM), 1)
 	ASMS := $(patsubst $(PROJ_SRC)/%.c, $(PROJ_OBJ)/%.s, $(SRCS))
 endif
 
-all: $(BOOTSTRAP_TARGET)
+all: $(BOOTSECTOR_TARGET)
 
-$(BOOTSTRAP_TARGET): bootstrap.s
+$(BOOTSECTOR_TARGET): bootsector.s
 	@echo
 	@echo building $(TARGET)
 	$(AS) $(ASMFLAGS) $^ $@
