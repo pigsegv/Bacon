@@ -14,7 +14,7 @@ ifeq ($(GENERATE_ASM), 1)
 	ASMS := $(patsubst %.c, $(OBJ)/%.s, $(MBR_SRCS) $(GPT_SRCS))
 endif
 
-all: $(MBR_TARGET) $(GPT_TARGET)
+all: $(MBR_TARGET) $(GPT_TARGET) $(ASMS)
 
 $(MBR_TARGET): $(MBR_OBJS) 
 	@echo
