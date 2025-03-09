@@ -23,6 +23,8 @@ main:
 	mov ah, 02h
 	int 10h
 
+	jmp exit
+
 	; xor cl, cl
 
 ; .loop:
