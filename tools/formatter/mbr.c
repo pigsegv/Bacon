@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
   }
 
   struct mbr mbr = { 0 };
-  memcpy(mbr.boostrap, bootstrap, BOOTSTRAP_SIZE);
+  memcpy(mbr.boostrap, bootstrap, size);
 
   uint64_t disk_size = ((PARTITION_START_LBA * 512) +
                         ((uint64_t)PARTITION_SIZE_GiB * 1024 * 1024 * 1024));
