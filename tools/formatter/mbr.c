@@ -74,13 +74,58 @@ int main(int argc, char **argv) {
   struct mbr mbr = { 0 };
   memcpy(mbr.boostrap, bootstrap, BOOTSTRAP_SIZE);
 
-  // Legacy CHS addressing is unused
+  uint64_t disk_size = ((PARTITION_START_LBA * 512) +
+                        ((uint64_t)PARTITION_SIZE_GiB * 1024 * 1024 * 1024));
+
+  uint32_t spt = 63;
+  uint32_t hpc = 0;
+  if (disk_size <= 504u * 1024 * 1024) {
+    hpc = 16;
+  } else if (disk_size <= 1008u * 1024 * 1024) {
+    hpc = 32;
+
+  } else if (disk_size <= 2016u * 1024 * 1024) {
+    hpc = 64;
+
+  } else if (disk_size <= 4032u * 1024 * 1024) {
+    hpc = 128;
+
+  } else {
+    hpc = 255;
+  }
+
+  uint32_t partition_sectors =
+    (uint32_t)PARTITION_SIZE_GiB * (1024 * 1024 * 1024) / 512;
+
+  uint32_t start_cylinder = PARTITION_START_LBA / (hpc * spt);
+  uint32_t start_head = (PARTITION_START_LBA / spt) % hpc;
+  uint32_t start_sector = (PARTITION_START_LBA % spt) + 1;
+
+  uint32_t end_cylinder =
+    (PARTITION_START_LBA + partition_sectors - 1) / (hpc * spt);
+  uint32_t end_head =
+    ((PARTITION_START_LBA + partition_sectors - 1) / spt) % hpc;
+  uint32_t end_sector =
+    ((PARTITION_START_LBA + partition_sectors - 1) % spt) + 1;
+
   mbr.partitions[0] = (struct partition){
     .attr = BOOTABLE,
+    .start_chs = {
+    	[0] = start_head & 0xff,
+    	[1] = ((start_cylinder >> 2) & 0xc0) | (start_sector & 0x3f),
+    	[2] = start_cylinder & 0xff,
+    },
     .type = PARTITION_TYPE,
+    .end_chs = {
+    	[0] = end_head & 0xff,
+    	[1] = ((end_cylinder >> 2) & 0xc0) | (end_sector & 0x3f),
+    	[2] = end_cylinder & 0xff,
+    },
     .LBA = PARTITION_START_LBA,
-    .sectors = (uint32_t)PARTITION_SIZE_GiB * (1024 * 1024 * 1024) / 512,
+    .sectors = partition_sectors,
   };
+
+  printf("%p\n", mbr.partitions[0].end_chs[1]);
 
   mbr.magic = 0xaa55;
 

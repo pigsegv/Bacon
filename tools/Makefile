@@ -16,4 +16,4 @@ all: $(TOOLS)
 # ---------------------- PROJECTS ----------------------
 
 formatter:
-	@$(MAKE) -C $(ROOT_PATH)/tools/formatter
+	@$(MAKE) -C $(ROOT_PATH)/tools/formatter MBR_TARGET=$(BIN)/format_mbr GPT_TARGET=$(BIN)/format_gpt

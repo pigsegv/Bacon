@@ -57,5 +57,5 @@ obj/
 tags
 .ccls
 *.bin
-
-
+*.iso
+*.img

@@ -14,20 +14,19 @@ ifeq ($(GENERATE_ASM), 1)
 	ASMS := $(patsubst %.c, $(OBJ)/%.s, $(MBR_SRCS) $(GPT_SRCS))
 endif
 
-all: $(BIN)/format-mbr $(BIN)/format-gpt $(ASMS)
-	
+all: $(MBR_TARGET) $(GPT_TARGET)
 
-$(BIN)/format-mbr: $(MBR_OBJS) 
+$(MBR_TARGET): $(MBR_OBJS) 
 	@echo
-	@echo building $(TARGET)
+	@echo building $@
 	@$(LD) $(CFLAGS) $^ -o $@ $(LDFLAGS)
-	@echo built $(TARGET)
+	@echo built $@
 
-$(BIN)/format-gpt: $(GPT_OBJS) 
+$(GPT_TARGET): $(GPT_OBJS) 
 	@echo
-	@echo building $(TARGET)
+	@echo building $@
 	@$(LD) $(CFLAGS) $^ -o $@ $(LDFLAGS)
-	@echo built $(TARGET)
+	@echo built $@
 
 -include $(DEPS)
 
