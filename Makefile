@@ -26,11 +26,12 @@ EXTERNAL_DIR := $(ROOT_PATH)/external
 EXTERNAL_LIBS_DIR := $(ROOT_PATH)/external-libs
 
 CFLAGS := -I$(SRC) -I$(INCLUDE) -I$(ROOT_PATH)
+ASMFLAGS :=
 LDFLAGS := -Wl,-rpath=$(BIN) -L$(BIN)
 
 GENERATE_ASM := 1
 
-export PLATFORM CC LD SRC OBJ BIN INCLUDE EXTERNAL_DIR EXTERNAL_LIBS_DIR CFLAGS LDFLAGS GENERATE_ASM 
+export PLATFORM CC LD SRC OBJ BIN INCLUDE EXTERNAL_DIR EXTERNAL_LIBS_DIR CFLAGS LDFLAGS GENERATE_ASM ASMFLAGS AS
 
 OBJ_DIRS += $(call get_dirs, $(SRC))
 OBJ_DIRS += $(call get_dirs, $(ROOT_PATH)/tools)
@@ -39,7 +40,7 @@ OBJ_DIRS := $(call relative_foreach, $(patsubst %, $(OBJ)/%, $(call relative_for
 
 CREATE_DIR_COMMAND := ./dirs.sh
 
-PROJECTS := tools 
+PROJECTS := tools bootloader create_disk
 
 .PHONY: all dirs clean external run $(PROJECTS)
 
@@ -49,6 +50,13 @@ all: dirs $(PROJECTS)
 
 tools:
 	@$(MAKE) -C $(ROOT_PATH)/tools
+
+bootloader:
+	@$(MAKE) -C $(ROOT_PATH)/src/bootloader BOOTSTRAP_TARGET=$(BIN)/bootstrap.bin
+
+create_disk: tools bootloader
+	./create_disk.sh $(BIN)/bootstrap.bin $(BIN)/disk.iso $(BIN)/fs-image.img
+
 
 # ---------------------- UTILITY ----------------------
 
