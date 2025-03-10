@@ -3,6 +3,78 @@ format binary
 
 org 0x7c00
 	
+jmp main	
+
+enable_A20:
+	; using the bios
+	mov ax, 2403h
+	int 15h
+	jc .bios_failed ; int 15h not supported
+	cmp ah, 0
+	jnz .bios_failed ; int 15h not supported
+
+	mov ax, 2401h
+	int 15h
+	jb .bios_failed
+	cmp ah, 0
+	jnz .bios_failed
+
+	call check_A20
+	test ax, ax
+	jnz .bios_failed
+
+	ret
+	
+.bios_failed:
+	; Try the other methods
+	jmp exit
+
+check_A20:
+	pushf
+	push si
+	push di
+	push ds
+	push es
+	cli
+
+	xor ax, ax
+	mov ds, ax
+	mov si, 0x7dfe
+	mov ax, [si]
+
+	mov bx, 0xffff
+	mov ds, bx
+	mov si, 0x7e0e
+
+	cmp ax, [si]
+
+	jne .return_success
+
+	xor ax, ax
+	mov es, ax
+	mov di, 0x7dfe
+ 	mov [di], WORD 0x6969
+	mov ax, [es:di]
+
+	cmp ax, [si]
+
+	jne .return_success
+
+	; Return failure
+	mov ax, 1
+	jmp .return
+	
+.return_success:
+	xor ax, ax
+
+.return:
+	pop es
+	pop ds
+	pop di
+	pop si
+	popf
+	sti
+	ret
 main:
 	mov sp, stack_end
 	mov bp, stack_end
