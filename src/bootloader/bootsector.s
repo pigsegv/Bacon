@@ -78,6 +78,10 @@ check_A20:
 main:
 	mov sp, stack_end
 	mov bp, stack_end
+	mov ax, stack_begin
+	mov ss, ax
+	mov ax, data_begin
+	mov ss, ax
 	
 	call check_A20
 
