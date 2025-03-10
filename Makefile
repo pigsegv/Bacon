@@ -42,7 +42,7 @@ CREATE_DIR_COMMAND := ./dirs.sh
 
 PROJECTS := tools bootloader create_disk
 
-.PHONY: all dirs clean external run projects $(PROJECTS)
+.PHONY: all dirs clean external run qemu $(PROJECTS)
 
 
 all: $(PROJECTS)
@@ -76,4 +76,7 @@ dirs:
 clean:
 	-@rm -rf $(OBJ)
 	-@rm -rf $(BIN)
+
+qemu:
+	@qemu-system-x86_64 -drive file=bin/disk.iso,format=raw -m 1G -bios ~/seabios/out/bios.bin
 

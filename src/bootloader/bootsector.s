@@ -25,7 +25,7 @@ main:
 
 	jmp exit
 
-	; xor cl, cl
+; xor cl, cl
 
 ; .loop:
 ; 	push cx
@@ -56,6 +56,35 @@ main:
 	
 
 enable_A20:
+	; using the bios
+	mov ax, 2403h
+	int 15h
+	jc .bios_failed ; int 15h not supported
+	cmp ah, 0
+	jnz .bios_failed ; int 15h not supported
+
+	; Get A20 status
+	mov ax, 2402h
+	int 15h
+	jb .bios_failed
+	cmp ah, 0
+	jnz .bios_failed
+
+	; Sanity check to make sure A20 is disabled.
+	; We wouldn't even be here if it wasn't.
+	cmp al, 1
+	je .bios_failed
+
+	mov ax, 2401h
+	int 15h
+	jb .bios_failed
+	cmp ah, 0
+	jnz .bios_failed
+
+	ret
+	
+.bios_failed:
+	; Try the other methods
 	jmp exit
 
 check_A20:
@@ -83,6 +112,7 @@ check_A20:
 	jne .return
 
 	call enable_A20
+	jmp check_A20 ; Test if a20 was enabled (Remove in production)
 	
 .return:
 	ret
@@ -95,7 +125,9 @@ msg: db "Hello OS!"
 len = $ - msg
 	
 stack_begin: 
-	rb 200
+	rb 100
 stack_end:
 	
+; To make sure binary is within the 440 byte limit
+db 'F'
 
