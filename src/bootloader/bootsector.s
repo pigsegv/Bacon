@@ -5,6 +5,58 @@ org 0x7c00
 	
 jmp main	
 
+timer:
+	inc WORD [timer_counter]
+
+	cli
+	push ax
+
+	mov al, 0x20
+	out 0x20, al
+
+	pop ax
+	sti
+
+	iret
+
+
+print_str:
+	push ds
+
+	xor cx, cx
+.loop:
+	push si
+	push cx
+ 
+ 	xor ax, ax
+ 	mov ds, ax
+ 
+ 	mov si, cx
+ 	mov bx, di
+ 	mov al, [bx + si]
+ 	xor bh, bh
+ 	mov cx, 1
+ 	mov ah, 0ah
+ 	int 10h
+ 
+ 	pop cx
+	pop si
+ 	
+ 	inc cl
+ 
+ 	xor bh, bh
+ 	mov dh, 0
+ 	mov dl, cl
+ 	mov ah, 02h
+ 	int 10h
+ 
+ 	cmp cx, si
+ 	jl .loop
+
+	pop ds
+
+	ret
+
 enable_A20:
 	; using the bios
 	mov ax, 2403h
@@ -26,7 +78,10 @@ enable_A20:
 	ret
 	
 .bios_failed:
-	; Try the other methods
+	mov di, a20_failed_msg
+	mov si, a20_len
+	call print_str
+
 	jmp exit
 
 check_A20:
@@ -76,28 +131,74 @@ check_A20:
 	sti
 	ret
 
+init_pic:
+	push ax
+	push bx
+	push ds
+	cli
+
+	xor ax, ax
+	mov ds, ax
+	mov [PIT_ADDR + 2], ax
+	mov ax, timer
+	mov [PIT_ADDR], ax
+
+	mov al, 0x13
+	out 0x20, al
+	xor al, al
+	out 0x80, al
+
+	mov al, PIT_INT
+	out 0x21, al
+	xor ax, ax
+	out 0x80, ax
+
+	mov al, 4
+	out 0x21, al
+	xor ax, ax
+	out 0x80, ax
+
+	mov al, 0x01
+	out 0x21, al
+	xor ax, ax
+	out 0x80, ax
+
+	mov al, 0
+	out 0x21, al
+	
+	sti
+	pop ds
+	pop bx
+	pop ax
+
+	ret
+
+spurious_irq:
+	; TODO:
+
+	iret
+
+init_pit:
+	push ax
+
+	mov al, 0x36
+	out 0x43, al
+
+	mov ax, 0x10
+	out 0x40, al
+	mov al, ah
+	out 0x40, al
+
+	pop ax
+	
+	ret
+	
 
 main:
-	mov sp, stack_end
-	mov bp, stack_end
-	mov ax, stack_begin
+	mov sp, 0xffff
+	mov bp, 0xffff
+	mov ax, 0x7000
 	mov ss, ax
-	mov ax, data_begin
-	mov ds, ax
-
-	
-	call check_A20
-	test ax, ax
-	jz .A20_enabled
-
-	call enable_A20
-	call check_A20
-	test ax, ax
-	jz .A20_enabled
-
-	jmp exit
-
-.A20_enabled:
 
 	xor al, al
 	mov ah, 05h
@@ -113,44 +214,61 @@ main:
 	mov ah, 02h
 	int 10h
 
+	call init_pic
+	call init_pit
+	
+	call check_A20
+	test ax, ax
+	jz .A20_enabled
+
+	call enable_A20
+	call check_A20
+	test ax, ax
+	jz .A20_enabled
+
 	jmp exit
 
-; xor cl, cl
+.A20_enabled:
+	xor ax, ax
+	mov ds, ax
 
-; .loop:
-; 	push cx
-; 
-; 	xor ax, ax
-; 	mov ds, ax
-; 
-; 	mov si, cx
-; 	mov bx, msg
-; 	mov al, [bx + si]
-; 	xor bh, bh
-; 	mov cx, 1
-; 	mov ah, 0ah
-; 	int 10h
-; 
-; 	pop cx
-; 	
-; 	inc cl
-; 
-; 	xor bh, bh
-; 	mov dh, 0
-; 	mov dl, cl
-; 	mov ah, 02h
-; 	int 10h
-; 
-; 	cmp cl, len
-; 	jl .loop
+.loop:
+	mov ax, [timer_counter]
+	cmp ax, 1000
+
+	jnz .loop
+
+ 	mov al, [char]
+ 	xor bh, bh
+ 	mov cx, 1
+ 	mov ah, 0ah
+ 	int 10h
+	
+	inc BYTE [char]
+	mov WORD [timer_counter], 0
+
+	jmp .loop
+
+
+	jmp exit
 
 exit:
 
 data_begin:
+msg: db "Yo, wassup!"
+len = $ - msg
 
-stack_begin: 
-	rb 200
-stack_end:
+a20_failed_msg: db "Failed to enable A20 via the BIOS"
+
+scratch_qword: rq 1
+
+char: db '1'
+timer_counter: dw 0
+
+a20_len = $ - a20_failed_msg
+
+PIT_INT = 0x20
+PIT_ADDR = 4 * PIT_INT
 	
 ; To make sure binary is within the 440 byte limit
 db 'F'
