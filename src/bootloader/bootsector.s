@@ -83,7 +83,7 @@ main:
 	mov ax, stack_begin
 	mov ss, ax
 	mov ax, data_begin
-	mov ss, ax
+	mov ds, ax
 
 	
 	call check_A20
