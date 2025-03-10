@@ -75,6 +75,8 @@ check_A20:
 	popf
 	sti
 	ret
+
+
 main:
 	mov sp, stack_end
 	mov bp, stack_end
@@ -82,8 +84,20 @@ main:
 	mov ss, ax
 	mov ax, data_begin
 	mov ss, ax
+
 	
 	call check_A20
+	test ax, ax
+	jz .A20_enabled
+
+	call enable_A20
+	call check_A20
+	test ax, ax
+	jz .A20_enabled
+
+	jmp exit
+
+.A20_enabled:
 
 	xor al, al
 	mov ah, 05h
@@ -129,79 +143,13 @@ main:
 ; 
 ; 	cmp cl, len
 ; 	jl .loop
-	
-
-enable_A20:
-	; using the bios
-	mov ax, 2403h
-	int 15h
-	jc .bios_failed ; int 15h not supported
-	cmp ah, 0
-	jnz .bios_failed ; int 15h not supported
-
-	; Get A20 status
-	mov ax, 2402h
-	int 15h
-	jb .bios_failed
-	cmp ah, 0
-	jnz .bios_failed
-
-	; Sanity check to make sure A20 is disabled.
-	; We wouldn't even be here if it wasn't.
-	cmp al, 1
-	je .bios_failed
-
-	mov ax, 2401h
-	int 15h
-	jb .bios_failed
-	cmp ah, 0
-	jnz .bios_failed
-
-	ret
-	
-.bios_failed:
-	; Try the other methods
-	jmp exit
-
-check_A20:
-	xor ax, ax
-	mov ds, ax
-	mov si, 0x7dfe
-	mov ax, [si]
-
-	mov bx, 0xffff
-	mov ds, bx
-	mov si, 0x7e0e
-
-	cmp ax, [si]
-
-	jne .return
-
-	xor ax, ax
-	mov es, ax
-	mov di, 0x7dfe
- 	mov [di], WORD 0x6969
-	mov ax, [es:di]
-
-	cmp ax, [si]
-
-	jne .return
-
-	call enable_A20
-	jmp check_A20 ; Test if a20 was enabled (Remove in production)
-	
-.return:
-	ret
-
 
 exit:
 
-	
-msg: db "Hello OS!"
-len = $ - msg
-	
+data_begin:
+
 stack_begin: 
-	rb 100
+	rb 200
 stack_end:
 	
 ; To make sure binary is within the 440 byte limit

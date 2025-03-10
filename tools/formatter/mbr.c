@@ -125,8 +125,6 @@ int main(int argc, char **argv) {
     .sectors = partition_sectors,
   };
 
-  printf("%p\n", mbr.partitions[0].end_chs[1]);
-
   mbr.magic = 0xaa55;
 
   if (fio_write_to_file(outfile, &mbr, sizeof(mbr)) != 0) {
