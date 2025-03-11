@@ -20,45 +20,45 @@ timer:
 	iret
 
 
-print_str:
-	push ds
-
-	xor cx, cx
-.loop:
-	push si
-	push cx
- 
- 	xor ax, ax
- 	mov ds, ax
- 
- 	mov si, cx
- 	mov bx, di
- 	mov al, [bx + si]
- 	xor bh, bh
- 	mov cx, 1
- 	mov ah, 0ah
- 	int 10h
- 
- 	pop cx
-	pop si
- 	
- 	inc cl
- 
- 	xor bh, bh
- 	mov dh, 0
- 	mov dl, cl
- 	mov ah, 02h
- 	int 10h
- 
- 	cmp cx, si
- 	jl .loop
-
-	pop ds
-
-	ret
+;print_str:
+;	push ds
+;
+;	xor cx, cx
+;.loop:
+;	push si
+;	push cx
+; 
+; 	xor ax, ax
+; 	mov ds, ax
+; 
+; 	mov si, cx
+; 	mov bx, di
+; 	mov al, [bx + si]
+; 	xor bh, bh
+; 	mov cx, 1
+; 	mov ah, 0ah
+; 	int 10h
+; 
+; 	pop cx
+;	pop si
+; 	
+; 	inc cl
+; 
+; 	xor bh, bh
+; 	mov dh, 0
+; 	mov dl, cl
+; 	mov ah, 02h
+; 	int 10h
+; 
+; 	cmp cx, si
+; 	jl .loop
+;
+;	pop ds
+;
+;	ret
 
 enable_A20:
-	; using the bios
+.bios:
 	mov ax, 2403h
 	int 15h
 	jc .bios_failed ; int 15h not supported
@@ -78,9 +78,8 @@ enable_A20:
 	ret
 	
 .bios_failed:
-	mov di, a20_failed_msg
-	mov si, a20_len
-	call print_str
+.keyboard_controller:
+	; TODO
 
 	jmp exit
 
@@ -131,56 +130,50 @@ check_A20:
 	sti
 	ret
 
+macro io_delay {
+	xor al, al
+	out 0x80, al
+}
+
 init_pic:
-	push ax
-	push bx
-	push ds
 	cli
 
+	; Set the interrupt handler for the PIT
 	xor ax, ax
 	mov ds, ax
 	mov [PIT_ADDR + 2], ax
 	mov ax, timer
 	mov [PIT_ADDR], ax
 
+	; ICW1
 	mov al, 0x13
 	out 0x20, al
-	xor al, al
-	out 0x80, al
+	io_delay
 
+	; ICW2
 	mov al, PIT_INT
 	out 0x21, al
-	xor ax, ax
-	out 0x80, ax
+	io_delay
 
-	mov al, 4
+	; ICW3
+	mov al, 0
 	out 0x21, al
-	xor ax, ax
-	out 0x80, ax
+	io_delay
 
+	; ICW4
 	mov al, 0x01
 	out 0x21, al
-	xor ax, ax
-	out 0x80, ax
+	io_delay
 
-	mov al, 0
+	; Mask all but IRQ0
+	mov al, 0xfe
 	out 0x21, al
 	
 	sti
-	pop ds
-	pop bx
-	pop ax
 
 	ret
 
-spurious_irq:
-	; TODO:
-
-	iret
-
 init_pit:
-	push ax
-
 	mov al, 0x36
 	out 0x43, al
 
@@ -189,8 +182,6 @@ init_pit:
 	mov al, ah
 	out 0x40, al
 
-	pop ax
-	
 	ret
 	
 
@@ -240,7 +231,7 @@ main:
 
  	mov al, [char]
  	xor bh, bh
- 	mov cx, 1
+ 	mov cx, 10
  	mov ah, 0ah
  	int 10h
 	
@@ -255,17 +246,12 @@ main:
 exit:
 
 data_begin:
-msg: db "Yo, wassup!"
-len = $ - msg
 
-a20_failed_msg: db "Failed to enable A20 via the BIOS"
-
-scratch_qword: rq 1
+;scratch_qword: rq 1
 
 char: db '1'
 timer_counter: dw 0
 
-a20_len = $ - a20_failed_msg
 
 PIT_INT = 0x20
 PIT_ADDR = 4 * PIT_INT
