@@ -5,19 +5,57 @@ org 0x7c00
 	
 jmp main	
 
-print_num:
-	; TODO
+; prints number inside eax
+;print_num:
+;	xor cx, cx
+;	mov ebx, 10
+;
+;.loop:
+;	xor edx, edx
+;	div ebx
+;	add dl, '0'
+;	shl dx, 8 ; little-endian
+;	push dx
+;	add sp, 1
+;	inc cx
+;
+;	test eax, eax
+;	jnz .loop
+;
+;	mov bx, sp
+;
+;	push di
+;	push si
+;	push cx
+;
+;	mov di, bx
+;	mov si, cx
+;	mov bx, ss
+;	call print_str
+;
+;	pop cx
+;	pop si
+;	pop di
+;
+;	add sp, cx
+;
+;	ret
 
+	
+; bx -> string segment
+; di -> string offset
+; si -> length
 print_str:
 	push ds
 
 	xor cx, cx
+
+ 	mov ds, bx
+
 .loop:
 	push si
 	push cx
  
- 	xor ax, ax
- 	mov ds, ax
  
  	mov si, cx
  	mov bx, di
@@ -54,24 +92,24 @@ parse_mbr:
 	mov si, FIRST_PARTITION_ENTRY
 	mov ebx, 0xffffffff ; Min starting block
 	xor dl, dl ; (valid partition exits) ? 1 : 0
-.loop:
+.loop_entries:
 	mov eax, [si + 0x0c] ; Number of blocks in sector
 	test eax, eax
-	jz .continue
+	jz .loop.continue
 
 	mov dl, 1
 
-	cmp ebx, [si + 0x08]
+	cmp [si + 0x08], ebx
 	cmovb ebx, [si + 0x08]
 
 	test ebx, ebx
 	jz exit ; Invalid partition table
 	
-.continue:
+.loop.continue:
 	add si, 16
-	loop .loop
+	loop .loop_entries
 
-.break:
+.loop.break:
 	test dl, dl
 	jz exit ; No valid partition exists
 
@@ -106,14 +144,14 @@ main:
 	int 10h
 
 	call parse_mbr
-
-;	cmp eax, 63
-;	jne exit
-	mov [temp], eax
+	
+	;call print_num
+	;jmp exit
 
 	push eax
-	mov di, temp
-	mov si, 4
+	mov di, greeter
+	mov si, greeter.len
+	mov bx, 0
 	call print_str
 	pop eax
 
