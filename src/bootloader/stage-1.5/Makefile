@@ -1,4 +1,4 @@
-OBJ := $(OBJ)/src/bootloader
+OBJ := $(OBJ)/stage-1.5
 
 CFLAGS  += -Wall -Wextra -ggdb3 -std=gnu23 -fPIC -O0
 LDFLAGS +=
@@ -11,18 +11,23 @@ ifeq ($(GENERATE_ASM), 1)
 	ASMS := $(patsubst $(PROJ_SRC)/%.c, $(PROJ_OBJ)/%.s, $(SRCS))
 endif
 
-.PHONY: all $(STAGE15_TARGET)
+.PHONY: all
 
-all: $(BOOTSECTOR_TARGET) $(STAGE15_TARGET)
+all: $(STAGE15_TARGET)
 
-$(BOOTSECTOR_TARGET): bootsector.s
+$(STAGE15_TARGET): $(OBJ)/protected.bin
+	@echo
+	@echo building $@
+	@cat $(OBJ)/protected.bin > $@
+	@echo built $@
+
+$(OBJ)/protected.bin: protected.s
 	@echo
 	@echo building $@
 	@$(AS) $(ASMFLAGS) $^ $@
 	@echo built $@
 
-$(STAGE15_TARGET):
-	@$(MAKE) -C ./stage-1.5
+
 
 -include $(DEPS)
 

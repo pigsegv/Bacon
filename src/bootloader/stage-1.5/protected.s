@@ -1,8 +1,50 @@
 use16
 format binary
 
-org 0x7e00
+org 0x0
 
+jmp main
+
+; bx -> string segment
+; di -> string offset
+; si -> length
+print_str:
+	push ds
+
+	xor cx, cx
+
+ 	mov ds, bx
+
+.loop:
+	push si
+	push cx
+ 
+ 
+ 	mov si, cx
+ 	mov bx, di
+ 	mov al, [bx + si]
+ 	xor bh, bh
+ 	mov cx, 1
+ 	mov ah, 0ah
+ 	int 10h
+ 
+ 	pop cx
+	pop si
+ 	
+ 	inc cl
+ 
+ 	xor bh, bh
+ 	mov dh, 0
+ 	mov dl, cl
+ 	mov ah, 02h
+ 	int 10h
+ 
+ 	cmp cx, si
+ 	jl .loop
+
+	pop ds
+
+	ret
 
 timer:
 	inc WORD [timer_counter]
@@ -156,12 +198,26 @@ init_pit:
 
 	ret
 
+main:
+	mov ax, 0x7e0
+	mov ds, ax
+
+	mov di, msg
+	mov si, msg.len
+	mov bx, ds
+	call print_str
+
+	jmp exit
+	
+
 exit:
 	; Error msg
 .loop:
 	jmp .loop
 
 
+msg: db "Stage 1.5, BABYYYYY!!"
+	.len = $ - msg
 
 timer_counter: dw 0
 

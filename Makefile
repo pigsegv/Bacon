@@ -57,10 +57,10 @@ tools:
 	@$(MAKE) -C $(ROOT_PATH)/tools
 
 bootloader:
-	@$(MAKE) -C $(ROOT_PATH)/src/bootloader BOOTSECTOR_TARGET=$(BIN)/bootsector.bin
+	@$(MAKE) -C $(ROOT_PATH)/src/bootloader BOOTSECTOR_TARGET=$(BIN)/bootsector.bin STAGE15_TARGET=$(BIN)/stage-1.5.bin
 
 create_disk: tools bootloader
-	./create_disk.sh $(BIN)/bootsector.bin $(BIN)/disk.iso $(BIN)/fs-image.img
+	./create_disk.sh $(BIN)/disk.iso $(BIN)/fs-image.img $(BIN)/bootsector.bin $(BIN)/stage-1.5.bin
 
 # ---------------------- UTILITY ----------------------
 

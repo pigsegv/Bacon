@@ -183,15 +183,19 @@ main:
 	int 13h
 	jc exit
 
-	;call print_num
-	;jmp exit
+	jmp LOAD_SECTORS_TO_SEG:LOAD_SECTORS_TO_OFF
 
-	push eax
-	mov di, greeter
-	mov si, greeter.len
-	mov bx, 0
-	call print_str
-	pop eax
+	; mov ax, LOAD_SECTORS_TO_SEG
+	; mov ds, ax
+	; mov si, 0
+	; mov ax, [si]
+	; call print_num
+	; jmp exit
+
+	;mov di, greeter
+	;mov si, greeter.len
+	;mov bx, 0
+	;call print_str
 
 	jmp exit
 
