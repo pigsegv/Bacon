@@ -185,18 +185,6 @@ main:
 
 	jmp LOAD_SECTORS_TO_SEG:LOAD_SECTORS_TO_OFF
 
-	; mov ax, LOAD_SECTORS_TO_SEG
-	; mov ds, ax
-	; mov si, 0
-	; mov ax, [si]
-	; call print_num
-	; jmp exit
-
-	;mov di, greeter
-	;mov si, greeter.len
-	;mov bx, 0
-	;call print_str
-
 	jmp exit
 
 exit:

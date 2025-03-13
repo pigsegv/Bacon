@@ -43,7 +43,11 @@ macro wait_a20 {
 ; This function (procedure, whatever) is absolutely abhorrent
 enable_A20:
 	cli
-	jmp .fast_a20 ; For testing
+
+	call check_A20
+	test ax, ax
+	jz .exit ; already enabled
+
 .bios:
 	mov ax, 2403h
 	int 15h
