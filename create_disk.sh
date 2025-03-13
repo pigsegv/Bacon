@@ -18,5 +18,5 @@ dd seek=$[$PARTITION_OFFSET_SECTORS * 512] count=$(stat --printf="%s" $2)\
 dd seek=512 count=$(stat --printf="%s" $4)\
 	oflag=seek_bytes iflag=count_bytes bs=4096 < $4 1<> $1
 
-rm $3
+rm $2
 

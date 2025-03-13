@@ -6,81 +6,81 @@ org 0x7c00
 jmp main	
 
 ; prints number inside eax
-print_num:
-	xor cx, cx
-	mov ebx, 10
-
-.loop:
-	xor edx, edx
-	div ebx
-	add dl, '0'
-	shl dx, 8 ; little-endian
-	push dx
-	add sp, 1
-	inc cx
-
-	test eax, eax
-	jnz .loop
-
-	mov bx, sp
-
-	push di
-	push si
-	push cx
-
-	mov di, bx
-	mov si, cx
-	mov bx, ss
-	call print_str
-
-	pop cx
-	pop si
-	pop di
-
-	add sp, cx
-
-	ret
-
-; bx -> string segment
-; di -> string offset
-; si -> length
-print_str:
-	push ds
-
-	xor cx, cx
-
- 	mov ds, bx
-
-.loop:
-	push si
-	push cx
- 
- 
- 	mov si, cx
- 	mov bx, di
- 	mov al, [bx + si]
- 	xor bh, bh
- 	mov cx, 1
- 	mov ah, 0ah
- 	int 10h
- 
- 	pop cx
-	pop si
- 	
- 	inc cl
- 
- 	xor bh, bh
- 	mov dh, 0
- 	mov dl, cl
- 	mov ah, 02h
- 	int 10h
- 
- 	cmp cx, si
- 	jl .loop
-
-	pop ds
-
-	ret
+;print_num:
+;	xor cx, cx
+;	mov ebx, 10
+;
+;.loop:
+;	xor edx, edx
+;	div ebx
+;	add dl, '0'
+;	shl dx, 8 ; little-endian
+;	push dx
+;	add sp, 1
+;	inc cx
+;
+;	test eax, eax
+;	jnz .loop
+;
+;	mov bx, sp
+;
+;	push di
+;	push si
+;	push cx
+;
+;	mov di, bx
+;	mov si, cx
+;	mov bx, ss
+;	call print_str
+;
+;	pop cx
+;	pop si
+;	pop di
+;
+;	add sp, cx
+;
+;	ret
+;
+;; bx -> string segment
+;; di -> string offset
+;; si -> length
+;print_str:
+;	push ds
+;
+;	xor cx, cx
+;
+; 	mov ds, bx
+;
+;.loop:
+;	push si
+;	push cx
+; 
+; 
+; 	mov si, cx
+; 	mov bx, di
+; 	mov al, [bx + si]
+; 	xor bh, bh
+; 	mov cx, 1
+; 	mov ah, 0ah
+; 	int 10h
+; 
+; 	pop cx
+;	pop si
+; 	
+; 	inc cl
+; 
+; 	xor bh, bh
+; 	mov dh, 0
+; 	mov dl, cl
+; 	mov ah, 02h
+; 	int 10h
+; 
+; 	cmp cx, si
+; 	jl .loop
+;
+;	pop ds
+;
+;	ret
 
 FIRST_PARTITION_ENTRY = 0x7c00 + 0x1be
 
