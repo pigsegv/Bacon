@@ -6,42 +6,41 @@ org 0x7c00
 jmp main	
 
 ; prints number inside eax
-;print_num:
-;	xor cx, cx
-;	mov ebx, 10
-;
-;.loop:
-;	xor edx, edx
-;	div ebx
-;	add dl, '0'
-;	shl dx, 8 ; little-endian
-;	push dx
-;	add sp, 1
-;	inc cx
-;
-;	test eax, eax
-;	jnz .loop
-;
-;	mov bx, sp
-;
-;	push di
-;	push si
-;	push cx
-;
-;	mov di, bx
-;	mov si, cx
-;	mov bx, ss
-;	call print_str
-;
-;	pop cx
-;	pop si
-;	pop di
-;
-;	add sp, cx
-;
-;	ret
+print_num:
+	xor cx, cx
+	mov ebx, 10
 
-	
+.loop:
+	xor edx, edx
+	div ebx
+	add dl, '0'
+	shl dx, 8 ; little-endian
+	push dx
+	add sp, 1
+	inc cx
+
+	test eax, eax
+	jnz .loop
+
+	mov bx, sp
+
+	push di
+	push si
+	push cx
+
+	mov di, bx
+	mov si, cx
+	mov bx, ss
+	call print_str
+
+	pop cx
+	pop si
+	pop di
+
+	add sp, cx
+
+	ret
+
 ; bx -> string segment
 ; di -> string offset
 ; si -> length
@@ -121,7 +120,16 @@ parse_mbr:
 
 	ret
 
+MAX_SECTORS_TO_LOAD = 127
+LOAD_SECTORS_TO_SEG = 0x7e0
+LOAD_SECTORS_TO_OFF = 0
+
 main:
+	xor ax, ax
+	mov ds, ax
+
+	mov [bios_device_id], dl
+
 	mov sp, 0xffff
 	mov bp, 0xffff
 	mov ax, 0x7000
@@ -144,7 +152,37 @@ main:
 	int 10h
 
 	call parse_mbr
+
+	mov ebx, MAX_SECTORS_TO_LOAD
 	
+	cmp eax, MAX_SECTORS_TO_LOAD
+	cmova eax, ebx
+
+	mov [disk_packet.num_sectors], ax
+	mov WORD [disk_packet.buffer_offset], LOAD_SECTORS_TO_OFF
+	mov WORD [disk_packet.buffer_segment], LOAD_SECTORS_TO_SEG
+	mov DWORD [disk_packet.lba_low], 1
+
+	; Check if disk extensions are present
+	mov dl, [bios_device_id]
+	mov bx, 0x55aa
+	mov ah, 41h
+	int 13h
+	
+	jc exit
+	cmp bx, 0xaa55
+	jne exit
+
+	test cx, 1b
+	jz exit
+
+.extensions_present:
+	mov dl, [bios_device_id]
+	mov si, disk_packet
+	mov ah, 42h
+	int 13h
+	jc exit
+
 	;call print_num
 	;jmp exit
 
@@ -161,14 +199,23 @@ exit:
 	jmp exit ; Infinite loop
 
 data_begin:
+bios_device_id: rb 1
+
+align 2
+disk_packet:
+	.size: db 16
+	.reserved: db 0
+	.num_sectors: rb 2
+	.buffer_offset: rb 2
+	.buffer_segment: rb 2
+	.lba_low: rb 4
+	.lba_high: dd 0
+
 
 greeter: db "Yo, wassup!"
 	.len = $ - greeter
 
-;scratch_qword: rq 1
-temp: rd 1
 
-char: db '1'
 	
 ; To make sure binary is within the 440 byte limit
 db 'F'
