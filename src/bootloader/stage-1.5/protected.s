@@ -36,7 +36,6 @@ gdt:
 		db 0x92
 		db 0xcf
 		db 0
-	.end:
 	.len = $ - gdt
 	.text_offset = .kernel_text - gdt
 	.data_offset = .kernel_data - gdt

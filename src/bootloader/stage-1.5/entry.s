@@ -118,13 +118,19 @@ main:
 	jmp exit
 	
 exit:
-	; Error msg
+	mov di, failed
+	mov si, failed.len
+	mov bx, ds
+	call print_str
 .loop:
 	jmp .loop
 
+struc string [data] {
+	. db data
+	.len = $ - .
+}
 
-msg: db "Stage 1.5, BABYYYYY!!"
-	.len = $ - msg
+failed string "Failed to boot."
 
 counter: dd 0
 
