@@ -100,6 +100,7 @@ main:
 	test ax, ax
 	jnz exit
 
+
 	jmp to_protected
 
 	mov WORD [timer_counter], 1000
@@ -134,7 +135,7 @@ failed string "Failed to boot."
 
 counter: dd 0
 
+
 use32
 protected_mode_start:
-	jmp protected_mode_start
-	db "Protected mode starts here!"
+	

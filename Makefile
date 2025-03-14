@@ -78,5 +78,5 @@ clean:
 	-@rm -rf $(BIN)
 
 qemu:
-	@qemu-system-x86_64 -drive file=bin/disk.iso,format=raw -m 1G -bios ~/seabios/out/bios.bin
+	@qemu-system-x86_64 -drive file=bin/disk.iso,format=raw -m 1G -vga qxl -bios ~/seabios/out/bios.bin
 

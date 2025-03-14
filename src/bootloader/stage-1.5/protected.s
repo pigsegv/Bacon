@@ -13,6 +13,8 @@ to_protected:
 	or al, 1
 	mov cr0, eax
 	
+	xor ax, ax
+	mov ds, ax
 	jmp gdt.text_offset:(CODE_BEGIN_ADDR + protected_mode_start)
 
 ; 32 bit gdt descriptor

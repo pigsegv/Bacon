@@ -13,14 +13,14 @@ endif
 
 .PHONY: all
 
-BINARIES := $(OBJ)/entry.bin
+BINARIES := $(OBJ)/entry.bin $(OBJ)/test.bin
 
 ENTRY_BIN_SRCS := entry.s a20.s protected.s
 
 all: $(STAGE15_TARGET)
 
 
-$(STAGE15_TARGET): $(OBJ)/entry.bin
+$(STAGE15_TARGET): $(OBJ)/entry.bin $(OBJ)/test.bin
 	@echo
 	@echo building $@
 	@cat $(BINARIES) > $@
@@ -32,7 +32,11 @@ $(OBJ)/entry.bin: $(ENTRY_BIN_SRCS)
 	@$(AS) $(ASMFLAGS) $< $@
 	@echo built $@
 
-
+$(OBJ)/test.bin: test.s
+	@echo
+	@echo building $@
+	@$(AS) $(ASMFLAGS) $< $@
+	@echo built $@
 
 -include $(DEPS)
 
