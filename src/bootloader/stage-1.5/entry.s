@@ -1,13 +1,14 @@
 use16
 format binary
 
+CODE_BEGIN_ADDR = 0x7e00
 
 org 0x0
 
 jmp main
 
 include 'a20.s'
-
+include 'protected.s'
 
 ; prints number inside eax
 print_num:
@@ -99,8 +100,9 @@ main:
 	test ax, ax
 	jnz exit
 
+	jmp to_protected
 
-	mov WORD [timer_counter], 0
+	mov WORD [timer_counter], 1000
 .loop:
 	cmp WORD [timer_counter], 1000
 	jl .loop
@@ -115,7 +117,6 @@ main:
 
 	jmp exit
 	
-
 exit:
 	; Error msg
 .loop:
@@ -126,3 +127,8 @@ msg: db "Stage 1.5, BABYYYYY!!"
 	.len = $ - msg
 
 counter: dd 0
+
+use32
+protected_mode_start:
+	jmp protected_mode_start
+	db "Protected mode starts here!"

@@ -15,7 +15,7 @@ endif
 
 BINARIES := $(OBJ)/entry.bin
 
-ENTRY_BIN_SRCS := entry.s a20.s
+ENTRY_BIN_SRCS := entry.s a20.s protected.s
 
 all: $(STAGE15_TARGET)
 
