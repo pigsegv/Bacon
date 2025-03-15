@@ -91,6 +91,10 @@ main:
 	mov ax, 0x7e0
 	mov ds, ax
 
+	xor ax, ax
+	mov ss, ax
+	mov sp, 0x7df0
+
 	call init_pic
 	call init_pit
 
@@ -123,4 +127,4 @@ counter: dd 0
 
 use32
 protected_mode_start:
-	mov esp, 0x7dff
+	;mov esp, 0x7df0

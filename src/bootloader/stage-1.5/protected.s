@@ -13,7 +13,7 @@ to_protected:
 	or al, 1
 	mov cr0, eax
 	
-	xor ax, ax
+	xor ax, gdt.data_offset
 	mov ds, ax
 	jmp gdt.text_offset:(CODE_BEGIN_ADDR + protected_mode_start)
 
@@ -28,14 +28,14 @@ gdt:
 		dw 0xffff
 		dw 0
 		db 0
-		db 0x9a
+		db 0x9b
 		db 0xcf
 		db 0
 	.kernel_data:
 		dw 0xffff
 		dw 0
 		db 0
-		db 0x92
+		db 0x93
 		db 0xcf
 		db 0
 	.len = $ - gdt
