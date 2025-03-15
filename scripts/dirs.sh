@@ -12,8 +12,8 @@ do
 	fi
 done
 
-if [[ "$createdDirs" ]]; then
-	printf "\n"
-fi
+# if [[ "$createdDirs" ]]; then
+# 	printf "\n"
+# fi
 
 

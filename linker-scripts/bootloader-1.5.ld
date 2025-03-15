@@ -6,10 +6,10 @@ OUTPUT_ARCH(i386)
 ENTRY(main)
 SECTIONS
 {
-	.text.main phys : AT(phys) {
-		main = .;
-		*(.text.main)
-	}
+  .text.main phys : AT(phys) {
+    main = .;
+    *(.text.main)
+  }
   .text : AT(phys + (code - main)) {
     code = .;
     *(.text)

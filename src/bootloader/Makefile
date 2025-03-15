@@ -16,9 +16,7 @@ ASMFLAGS :=
 all: $(BOOTSECTOR_TARGET) $(STAGE15_TARGET)
 
 $(BOOTSECTOR_TARGET): bootsector.s
-	@echo
-	@echo building $@
-	@$(AS) $(ASMFLAGS) $^ $@
+	@$(AS) $(ASMFLAGS) $^ $@ > /dev/null
 	@echo built $@
 
 $(STAGE15_TARGET):

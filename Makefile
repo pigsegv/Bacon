@@ -61,6 +61,7 @@ bootloader:
 
 create_disk: tools bootloader
 	./scripts/create_disk.sh $(BIN)/disk.iso $(BIN)/fs-image.img $(BIN)/bootsector.bin $(BIN)/stage-1.5.bin
+	@echo created $(BIN)/disk.iso
 
 # ---------------------- UTILITY ----------------------
 

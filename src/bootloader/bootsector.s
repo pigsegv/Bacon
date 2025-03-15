@@ -78,7 +78,7 @@ main:
 
 	mov ebx, MAX_SECTORS_TO_LOAD
 	
-	cmp eax, MAX_SECTORS_TO_LOAD
+	cmp eax, ebx
 	cmova eax, ebx
 
 	mov [disk_packet.num_sectors], ax
