@@ -38,7 +38,7 @@ OBJ_DIRS += $(call get_dirs, $(ROOT_PATH)/tools)
 
 OBJ_DIRS := $(call relative_foreach, $(patsubst %, $(OBJ)/%, $(call relative_foreach, $(OBJ_DIRS))))
 
-CREATE_DIR_COMMAND := ./dirs.sh
+CREATE_DIR_COMMAND := ./scripts/dirs.sh
 
 PROJECTS := tools bootloader create_disk
 
@@ -60,7 +60,7 @@ bootloader:
 	@$(MAKE) -C $(ROOT_PATH)/src/bootloader BOOTSECTOR_TARGET=$(BIN)/bootsector.bin STAGE15_TARGET=$(BIN)/stage-1.5.bin
 
 create_disk: tools bootloader
-	./create_disk.sh $(BIN)/disk.iso $(BIN)/fs-image.img $(BIN)/bootsector.bin $(BIN)/stage-1.5.bin
+	./scripts/create_disk.sh $(BIN)/disk.iso $(BIN)/fs-image.img $(BIN)/bootsector.bin $(BIN)/stage-1.5.bin
 
 # ---------------------- UTILITY ----------------------
 
@@ -78,5 +78,9 @@ clean:
 	-@rm -rf $(BIN)
 
 qemu:
-	@qemu-system-x86_64 -drive file=bin/disk.iso,format=raw -m 1G -vga qxl -bios ~/seabios/out/bios.bin
+	@qemu-system-x86_64 -drive file=bin/disk.iso,format=raw -m 1G -vga qxl -bios ~/seabios/out/bios.bin -serial file:./logs/log.txt
+
+qemu-kvm:
+	@qemu-system-x86_64 -drive file=bin/disk.iso,format=raw -m 1G -vga qxl -bios ~/seabios/out/bios.bin -serial file:./logs/log.txt -enable-kvm
+
 

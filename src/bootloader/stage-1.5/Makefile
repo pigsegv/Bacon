@@ -1,29 +1,31 @@
 OBJ := $(OBJ)/stage-1.5
 
-CFLAGS  += -Wall -Wextra -ggdb3 -std=gnu23 -fPIC -O0
+CC := clang
+
+CFLAGS  += -Wall -Wextra -static -ggdb3 -std=gnu23 -O0 -target i386 -nostdlib -ffreestanding -fno-pic -fno-pie -ffunction-sections
 LDFLAGS +=
 ASMFLAGS := 
 
-
-DEPS := $(patsubst $(PROJ_SRC)/%.c, $(PROJ_OBJ)/%.d, $(SRCS))
+SRCS := $(shell find -type f -name "*.c" -printf "%P\n")
+OBJS := $(patsubst %.c, $(OBJ)/%.o, $(SRCS))
+DEPS := $(patsubst %.c, $(OBJ)/%.d, $(SRCS))
 
 ifeq ($(GENERATE_ASM), 1)
-	ASMS := $(patsubst $(PROJ_SRC)/%.c, $(PROJ_OBJ)/%.s, $(SRCS))
+	ASMS := $(patsubst %.c, $(OBJ)/%.s, $(SRCS))
 endif
 
 .PHONY: all
 
-BINARIES := $(OBJ)/entry.bin $(OBJ)/test.bin
+BINARIES := $(OBJ)/entry.bin $(OBJ)/protected.bin
 
 ENTRY_BIN_SRCS := entry.s a20.s protected.s
 
-all: $(STAGE15_TARGET)
+all: $(STAGE15_TARGET) $(ASMS)
 
-
-$(STAGE15_TARGET): $(OBJ)/entry.bin $(OBJ)/test.bin
+$(STAGE15_TARGET): $(BINARIES)
 	@echo
 	@echo building $@
-	@cat $(BINARIES) > $@
+	@cat $^ > $@
 	@echo built $@
 
 $(OBJ)/entry.bin: $(ENTRY_BIN_SRCS)
@@ -32,21 +34,21 @@ $(OBJ)/entry.bin: $(ENTRY_BIN_SRCS)
 	@$(AS) $(ASMFLAGS) $< $@
 	@echo built $@
 
-$(OBJ)/test.bin: test.s
+$(OBJ)/protected.bin: $(OBJS) $(OBJ)/entry.bin
 	@echo
 	@echo building $@
-	@$(AS) $(ASMFLAGS) $< $@
+	@$(ROOT_PATH)/scripts/link-bootloader.sh $(ROOT_PATH)/linker-scripts/bootloader-1.5.ld $(OBJ)/entry.bin $@ "$(OBJS)"
 	@echo built $@
 
 -include $(DEPS)
 
-$(PROJ_OBJ)/%.o: $(PROJ_SRC)/%.c
+$(OBJ)/%.o: %.c
 	@echo building $@
 	@$(CC) $(CFLAGS) -MD -MP -c $< -o $@
 	@echo built $@
 	@echo
 
-$(PROJ_OBJ)/%.s: $(PROJ_SRC)/%.c
+$(OBJ)/%.s: %.c
 	@echo Generating assembly $@
 	@$(CC) $(CFLAGS) -S -masm=intel $< -o $@
 	@echo Generated $@
