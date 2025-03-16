@@ -8,13 +8,19 @@ to_protected:
 	mov [gdt_descriptor.offset], eax
 
 	cli
+	; mask pic interrupts
+	mov al, 0xff
+	out 0x21, al
+
 	lgdt [gdt_descriptor]
 	mov eax, cr0 
 	or al, 1
 	mov cr0, eax
 	
-	xor ax, gdt.data_offset
+	mov ax, gdt.data_offset
 	mov ds, ax
+	mov ss, ax
+	mov es, ax
 	jmp gdt.text_offset:(CODE_BEGIN_ADDR + protected_mode_start)
 
 ; 32 bit gdt descriptor

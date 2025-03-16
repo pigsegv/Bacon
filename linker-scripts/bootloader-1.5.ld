@@ -1,30 +1,27 @@
 /* "phys" gets appended when this script is called */
 
 OUTPUT_FORMAT("binary")
-/* OUTPUT_FORMAT("elf32-i386") */
 OUTPUT_ARCH(i386)
-
 ENTRY(main)
+
 SECTIONS
 {
-  .text.main phys : AT(phys) {
-    main = .;
-    *(.text.main)
-  }
-  .text : AT(phys + (code - main)) {
+  .text phys : AT(phys) {
     code = .;
-    *(.text)
+		*(.text.*.main)
+    *(.text*)
     *(.rodata)
   }
-  .data : AT(phys + (data - main))
-  {
-    data = .;
-    *(.data)
-  }
-  .bss : AT(phys + (bss - main))
+
+  .bss : AT(phys + (bss - code))
   {
     bss = .;
     *(.bss)
   }
-  end = .;
+
+  .data : AT(phys + (data - code))
+  {
+    data = .;
+    *(.data)
+  }
 }

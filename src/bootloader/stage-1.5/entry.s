@@ -127,4 +127,5 @@ counter: dd 0
 
 use32
 protected_mode_start:
-	;mov esp, 0x7df0
+
+

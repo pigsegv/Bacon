@@ -1,36 +1,35 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "test.h"
+#include "util.h"
+#include "idt.h"
 
-static char *vga_mem = (char *)0xb8000;
+static struct idt_entry idt_entries[31] = { 0 };
+struct idt_desc desc = {
+  .limit = sizeof(idt_entries) - 1,
+  .offset = (uint32_t)idt_entries,
+};
 
-#define STR_COLOUR 0x1F
-
-static void print_cstr(const char *str, uint32_t offset) {
-  uint32_t i = offset * 2; // Since each character requires 2 bytes
-  while (*str) {
-    vga_mem[i++] = *str;
-    vga_mem[i++] = STR_COLOUR;
-    str++;
-  }
+__attribute__((noreturn)) void invalid_opcode(void) {
+  print_cstr("EXCEPTION!     ", 0);
+  asm volatile("cli\n"
+               "hlt\n"
+               :);
+  for (;;)
+    ;
 }
 
-static void print_int(uint32_t n) {
-  //char buf[2] = { 0 };
-  char buf[2];
-  buf[1] = 0;
-  uint32_t i = 0;
-  while (n) {
-    buf[0] = n % 10 + '0';
-    print_cstr(buf, i);
-    n /= 10;
-    i++;
-  }
+void init_idt(void) {
+  register_int(idt_entries, 0, 0xf, invalid_opcode);
+  asm volatile("lidt [%[idtr]]\n" : : [idtr] "m"(desc));
+  asm volatile("sti\n" :);
 }
 
 int main(void) {
-  print_int(69420);
+  init_idt();
+  volatile uint32_t a = 5 / 0;
+
+  print_cstr("Hello", 80);
   for (;;)
     ;
 }

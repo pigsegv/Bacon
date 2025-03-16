@@ -1,6 +1,13 @@
 OBJ := $(OBJ)/stage-1.5
 
-CFLAGS  += -Wall -Wextra -static -ggdb3 -std=gnu23 -O0 -m32 -nostdlib -ffreestanding -fno-pic -fno-pie -ffunction-sections -masm=intel -fno-stack-protector
+CC := gcc
+
+CFLAGS  += -Wall -Wextra -static -ggdb3 -std=gnu23 -O3 -m32 -nostdlib -ffreestanding -fno-pic -fno-pie -ffunction-sections -masm=intel -fno-stack-protector -mno-red-zone -mno-sse -Wdeprecated -Wshadow
+
+ifeq ($(CC), clang)
+	CFLAGS += -target i386
+endif
+
 LDFLAGS +=
 ASMFLAGS := 
 
@@ -39,6 +46,6 @@ $(OBJ)/%.o: %.c
 	@echo built $@
 
 $(OBJ)/%.s: %.c
-	@$(CC) $(CFLAGS) -S $< -o $@ -masm=intel
+	@$(CC) $(CFLAGS) -S $< -o $@ -masm=intel > /dev/null
 	@echo Generated $@
 
