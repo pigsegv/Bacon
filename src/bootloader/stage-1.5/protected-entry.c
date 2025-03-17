@@ -2,7 +2,6 @@
 #include <stddef.h>
 
 #include "util.h"
-#include "idt.h"
 #include "interrupts.h"
 
 static struct idt_entry idt_entries[32] = { 0 };
