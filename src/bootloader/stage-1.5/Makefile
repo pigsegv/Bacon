@@ -2,7 +2,7 @@ OBJ := $(OBJ)/stage-1.5
 
 CC := gcc
 
-CFLAGS  += -Wall -Wextra -static -ggdb3 -std=gnu23 -O3 -m32 -nostdlib -ffreestanding -fno-pic -fno-pie -ffunction-sections -masm=intel -fno-stack-protector -mno-red-zone -mno-sse -Wdeprecated -Wshadow
+CFLAGS  += -Wall -Wextra -static -ggdb3 -std=gnu23 -O3 -m32 -nostdlib -ffreestanding -fno-pic -fno-pie -ffunction-sections -masm=intel -fno-stack-protector -mno-red-zone -Wdeprecated -Wshadow
 
 ifeq ($(CC), clang)
 	CFLAGS += -target i386

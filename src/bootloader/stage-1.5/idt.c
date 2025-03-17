@@ -1,6 +1,6 @@
 #include "idt.h"
 
-#define CODE_SEGMENT_OFFSET ((uint16_t)8)
+#define CODE_SEGMENT ((uint16_t)1)
 
 void register_int(struct idt_entry *entries, uint32_t entry, uint8_t gate_type,
                   void (*handler)()) {
@@ -16,7 +16,7 @@ void register_int(struct idt_entry *entries, uint32_t entry, uint8_t gate_type,
     : [offset_low] "=r"(e->offset_low), [offset_high] "=r"(e->offset_high)
     : [ptr] "r"(handler)
     : "eax", "ax");
-  e->segment = 0 | (CODE_SEGMENT_OFFSET << 3);
+  e->segment = 0 | (CODE_SEGMENT << 3);
   e->gate_type = gate_type;
   e->privilege = 0;
 }
