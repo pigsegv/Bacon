@@ -2,6 +2,10 @@
 
 TEMP_FILE=$(mktemp XXXXX.ld)
 
+if [[ $? -ne 0 ]] ; then
+	exit 1
+fi
+
 START_ADDR=0x7e00
 OFFSET=$[$START_ADDR+$(stat --printf="%s" $2)]
 

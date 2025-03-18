@@ -40,7 +40,7 @@ OBJ_DIRS := $(call relative_foreach, $(patsubst %, $(OBJ)/%, $(call relative_for
 
 CREATE_DIR_COMMAND := ./scripts/dirs.sh
 
-PROJECTS := tools bootloader create_disk
+PROJECTS := tools bootloader format_disk
 
 .PHONY: all dirs clean external run qemu $(PROJECTS)
 
@@ -59,11 +59,16 @@ tools:
 bootloader:
 	@$(MAKE) -C $(ROOT_PATH)/src/bootloader BOOTSECTOR_TARGET=$(BIN)/bootsector.bin STAGE15_TARGET=$(BIN)/stage-1.5.bin
 
-create_disk: tools bootloader
-	./scripts/create_disk.sh $(BIN)/disk.iso $(BIN)/fs-image.img $(BIN)/bootsector.bin $(BIN)/stage-1.5.bin
-	@echo created $(BIN)/disk.iso
+format_disk: tools bootloader
+	./scripts/create_disk.sh no-format $(BIN)/disk.iso $(BIN)/bootsector.bin $(BIN)/stage-1.5.bin
+	@echo formatted $(BIN)/disk.iso
+
 
 # ---------------------- UTILITY ----------------------
+
+create_disk: tools bootloader
+	./scripts/create_disk.sh format $(BIN)/disk.iso $(BIN)/bootsector.bin $(BIN)/stage-1.5.bin
+	@echo created $(BIN)/disk.iso
 
 external:
 	@mkdir -p $(EXTERNAL_LIBS_DIR)
@@ -79,9 +84,6 @@ clean:
 	-@rm -rf $(BIN)
 
 qemu:
-	@qemu-system-x86_64 -drive file=bin/disk.iso,format=raw -m 1G -vga qxl -bios ~/seabios/out/bios.bin -serial file:./logs/log.txt
-
-qemu-kvm:
-	@qemu-system-x86_64 -drive file=bin/disk.iso,format=raw -m 1G -vga qxl -bios ~/seabios/out/bios.bin -serial file:./logs/log.txt -enable-kvm
+	@qemu-system-x86_64 -drive file=bin/disk.iso,format=raw -m 1G -vga qxl -bios ~/seabios/out/bios.bin -serial file:./logs/log.txt -cpu host -enable-kvm
 
 

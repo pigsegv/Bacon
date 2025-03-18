@@ -67,3 +67,8 @@ size_t kstrlen(const char *s) {
     ;
   return i - 1;
 }
+
+void kabort(void) {
+  asm volatile("cli\n"
+               "hlt\n");
+}
