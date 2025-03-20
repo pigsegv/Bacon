@@ -23,7 +23,7 @@ endif
 
 BINARIES := $(OBJ)/entry.bin $(OBJ)/protected.bin
 
-ENTRY_BIN_SRCS := entry.s a20.s protected.s
+ENTRY_BIN_SRCS := entry.s a20.s protected.s memory-map.s
 
 all: $(STAGE15_TARGET) $(ASMS)
 

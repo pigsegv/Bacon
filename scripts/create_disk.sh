@@ -41,4 +41,3 @@ dd seek=512 count=$[(PARTITION_OFFSET_SECTORS - 1) * 512]\
 dd seek=512 count=$(stat --printf="%s" ${STAGE15})\
 	oflag=seek_bytes iflag=count_bytes bs=4096 < ${STAGE15} 1<> ${DISK_NAME}
 
-

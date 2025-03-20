@@ -66,7 +66,7 @@ format_disk: tools bootloader
 
 # ---------------------- UTILITY ----------------------
 
-create_disk: tools bootloader
+create_disk: tools
 	./scripts/create_disk.sh format $(BIN)/disk.iso $(BIN)/bootsector.bin $(BIN)/stage-1.5.bin
 	@echo created $(BIN)/disk.iso
 
@@ -84,6 +84,6 @@ clean:
 	-@rm -rf $(BIN)
 
 qemu:
-	@qemu-system-x86_64 -drive file=bin/disk.iso,format=raw -m 1G -vga qxl -bios ~/seabios/out/bios.bin -serial file:./logs/log.txt -cpu host -enable-kvm
+	@qemu-system-x86_64 -drive file=bin/disk.iso,format=raw -m 1G -vga qxl -serial file:./logs/log.txt -cpu host -enable-kvm
 
 

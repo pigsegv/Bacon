@@ -9,6 +9,7 @@ jmp main
 
 include 'a20.s'
 include 'protected.s'
+include 'memory-map.s'
 
 ; prints number inside eax
 ;print_num:
@@ -93,7 +94,7 @@ main:
 
 	xor ax, ax
 	mov ss, ax
-	mov sp, 0x7df0
+	mov sp, 0x7bf0
 
 	call init_pic
 	call init_pit
@@ -104,6 +105,7 @@ main:
 	test ax, ax
 	jnz exit
 
+	call load_mmap
 
 	jmp to_protected
 	
