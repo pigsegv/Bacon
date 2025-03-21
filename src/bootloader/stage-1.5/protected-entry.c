@@ -5,6 +5,22 @@
 #include "util.h"
 #include "interrupts.h"
 
+struct mmap_entry {
+  uint64_t base;
+  uint64_t length;
+
+  uint32_t type;
+
+  uint32_t acpi_attr;
+} __attribute__((packed));
+
+struct mmap {
+  uint32_t count;
+  uint8_t entry_size;
+
+  struct mmap_entry entries[];
+} __attribute__((packed));
+
 static struct idt_entry idt_entries[32] = { 0 };
 struct idt_desc desc = {
   .limit = sizeof(idt_entries) - 1,
@@ -26,9 +42,13 @@ int main(void) {
     asm volatile("sti\n" :);
   }
 
-  [[maybe_unused]] volatile int a[16] = { 0 }; // IDT test
+  struct mmap *mmap = (struct mmap *)0xfc00;
+  print_uint32(mmap->count * sizeof(struct mmap_entry), 0);
 
-  print_cstr("Hello", 80);
-  for (;;)
-    ;
+  print_cstr("Hello", 160);
+
+  [[maybe_unused]] volatile int a[16] = { 0 };
+
+  asm volatile("cli\n"
+               "hlt\n");
 }

@@ -53,6 +53,9 @@ load_mmap:
 	xor di, di
 	mov DWORD [es:di + 0], mmap_count
 
+	mov eax, [es:di]
+	call print_num
+
 	pop di
 	pop es
 	ret

@@ -63,12 +63,7 @@ void print_uint32_hex(uint32_t n, uint32_t offset) {
 
 size_t kstrlen(const char *s) {
   size_t i = 0;
-  while ((i++, *(s++)))
+  while (i++, *(s++))
     ;
   return i - 1;
-}
-
-void kabort(void) {
-  asm volatile("cli\n"
-               "hlt\n");
 }

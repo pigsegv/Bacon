@@ -12,40 +12,40 @@ include 'protected.s'
 include 'memory-map.s'
 
 ; prints number inside eax
-;print_num:
-;	xor cx, cx
-;	mov ebx, 10
-;
-;.loop:
-;	xor edx, edx
-;	div ebx
-;	add dl, '0'
-;	shl dx, 8 ; little-endian
-;	push dx
-;	add sp, 1
-;	inc cx
-;
-;	test eax, eax
-;	jnz .loop
-;
-;	mov bx, sp
-;
-;	push di
-;	push si
-;	push cx
-;
-;	mov di, bx
-;	mov si, cx
-;	mov bx, ss
-;	call print_str
-;
-;	pop cx
-;	pop si
-;	pop di
-;
-;	add sp, cx
-;
-;	ret
+print_num:
+	xor cx, cx
+	mov ebx, 10
+
+.loop:
+	xor edx, edx
+	div ebx
+	add dl, '0'
+	shl dx, 8 ; little-endian
+	push dx
+	add sp, 1
+	inc cx
+
+	test eax, eax
+	jnz .loop
+
+	mov bx, sp
+
+	push di
+	push si
+	push cx
+
+	mov di, bx
+	mov si, cx
+	mov bx, ss
+	call print_str
+
+	pop cx
+	pop si
+	pop di
+
+	add sp, cx
+
+	ret
 
 ; bx -> string segment
 ; di -> string offset

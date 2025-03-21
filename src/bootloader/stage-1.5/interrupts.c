@@ -3,6 +3,7 @@
 
 #include "interrupts.h"
 #include "util.h"
+#include "sys.h"
 
 #define INTERRUPTS_CODE_SEGMENT ((uint16_t)1)
 
