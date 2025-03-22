@@ -23,9 +23,8 @@ BIN := $(ROOT_PATH)/bin
 INCLUDE := $(ROOT_PATH)/include
 
 EXTERNAL_DIR := $(ROOT_PATH)/external
-EXTERNAL_LIBS_DIR := $(ROOT_PATH)/external-libs
 
-CFLAGS := -I$(SRC) -I$(INCLUDE) -I$(ROOT_PATH)
+CFLAGS := -I$(SRC) -I$(INCLUDE) -I$(ROOT_PATH) -I$(EXTERNAL_DIR)
 ASMFLAGS :=
 LDFLAGS := -Wl,-rpath=$(BIN) -L$(BIN)
 
@@ -40,7 +39,7 @@ OBJ_DIRS := $(call relative_foreach, $(patsubst %, $(OBJ)/%, $(call relative_for
 
 CREATE_DIR_COMMAND := ./scripts/dirs.sh
 
-PROJECTS := tools bootloader format_disk
+PROJECTS := tools bootloader format_disk fs
 
 .PHONY: all dirs clean external run qemu $(PROJECTS)
 
@@ -57,7 +56,10 @@ tools:
 	@$(MAKE) -C $(ROOT_PATH)/tools
 
 bootloader:
-	@$(MAKE) -C $(ROOT_PATH)/src/bootloader BOOTSECTOR_TARGET=$(BIN)/bootsector.bin STAGE15_TARGET=$(BIN)/stage-1.5.bin
+	@$(MAKE) -C $(SRC)/bootloader BOOTSECTOR_TARGET=$(BIN)/bootsector.bin STAGE15_TARGET=$(BIN)/stage-1.5.bin
+
+fs: 
+	@$(MAKE) -C $(SRC)/fs
 
 format_disk: tools bootloader
 	./scripts/create_disk.sh no-format $(BIN)/disk.iso $(BIN)/bootsector.bin $(BIN)/stage-1.5.bin

@@ -15,12 +15,12 @@ if [[ $1 = "format" ]] ; then
 		exit 1
 	fi
 
-	dd if=/dev/zero of=${TEMP_FILE} bs=4096 count=$[PARTITION_SIZE_GiB * 1024 * 1024 * 1024] iflag=count_bytes
-	mkfs.ext2 ${TEMP_FILE}
+	dd if=/dev/zero of=${TEMP_FILE} bs=4096 count=$[PARTITION_SIZE_GiB * 1024 * 1024 * 1024] iflag=count_bytes status=none
+	mkfs.ext2 -q ${TEMP_FILE}
 
 
 	dd seek=$[$PARTITION_OFFSET_SECTORS * 512] count=$(stat --printf="%s" ${TEMP_FILE})\
-		oflag=seek_bytes iflag=count_bytes bs=4096 < ${TEMP_FILE} 1<> ${DISK_NAME}
+		oflag=seek_bytes iflag=count_bytes bs=4096 status=none < ${TEMP_FILE} 1<> ${DISK_NAME}
 
 	rm ${TEMP_FILE}
 
@@ -36,8 +36,8 @@ fi
 
 
 dd seek=512 count=$[(PARTITION_OFFSET_SECTORS - 1) * 512]\
-	oflag=seek_bytes iflag=count_bytes bs=4096 < /dev/zero 1<> ${DISK_NAME}
+	oflag=seek_bytes iflag=count_bytes bs=4096 status=none < /dev/zero 1<> ${DISK_NAME}
 
 dd seek=512 count=$(stat --printf="%s" ${STAGE15})\
-	oflag=seek_bytes iflag=count_bytes bs=4096 < ${STAGE15} 1<> ${DISK_NAME}
+	oflag=seek_bytes iflag=count_bytes bs=4096 status=none < ${STAGE15} 1<> ${DISK_NAME}
 

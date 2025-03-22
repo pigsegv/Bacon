@@ -1,4 +1,4 @@
-#ifndef BCN_FS_H
-#define BCN_FS_H
+#ifndef FS_H
+#define FS_H
 
-#endif // BCN_FS_H
+#endif // FS_H

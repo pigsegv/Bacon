@@ -1,6 +1,6 @@
 OBJ := $(OBJ)/src/bootloader
 
-CFLAGS  += -Wall -Wextra -ggdb3 -std=gnu23 -fPIC -O0
+CFLAGS  += -Wall -Wextra -ggdb3 -std=gnu23 -fPIC -Os
 LDFLAGS +=
 ASMFLAGS := 
 

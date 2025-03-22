@@ -49,6 +49,8 @@ int main(void) {
 
   [[maybe_unused]] volatile int a[16] = { 0 };
 
+  print_cstr("Hi", 80);
+
   asm volatile("cli\n"
                "hlt\n");
 }
