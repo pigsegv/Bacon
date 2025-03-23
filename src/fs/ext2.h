@@ -62,6 +62,13 @@ struct fs_ext2_sb {
 
   uint8_t prealloc_blocks;
   uint8_t prealloc_dir_blocks;
+
+  uint16_t unused;
+
+  uint8_t journal_uuid[16];
+  uint32_t journal_inode;
+  uint32_t journal_dev;
+  uint32_t last_orphan;
 } __attribute__((packed));
 
 struct fs_ext2_bg_desc {
@@ -96,6 +103,7 @@ struct fs_ext2_inode {
   uint32_t sectors_count;
 
   uint32_t flags;
+
   uint32_t osd1;
 
   uint32_t block_ptr[12];
@@ -112,5 +120,22 @@ struct fs_ext2_inode {
 
   uint8_t osd2[12];
 } __attribute__((packed));
+
+/*
+ * Returns the number of bytes read. Returns -1 on error.
+ * Reads the entire file if count is -1.
+ */
+int64_t fs_ext2_read(const char *path, void *buf, int64_t offset,
+                     int64_t count);
+
+/*
+ * Returns a pointer to an inode structure that is a copy of the first inode
+ * of the file specified by "path".
+ * Returned pointer will be overwritten on subsequent calls.
+ * Returns NULL on error.
+ */
+struct fs_ext2_inode *fs_ext2_get_inode(const char *path);
+
+// TODO: Implement write operations
 
 #endif // FS_EXT_2_H

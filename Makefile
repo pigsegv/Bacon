@@ -41,7 +41,7 @@ CREATE_DIR_COMMAND := ./scripts/dirs.sh
 
 PROJECTS := tools bootloader format_disk fs
 
-.PHONY: all dirs clean external run qemu $(PROJECTS)
+.PHONY: all dirs clean external run qemu $(PROJECTS) test
 
 
 all: $(PROJECTS)
@@ -87,5 +87,3 @@ clean:
 
 qemu:
 	@qemu-system-x86_64 -drive file=bin/disk.iso,format=raw -m 1G -vga qxl -serial file:./logs/log.txt -cpu host -enable-kvm
-
-

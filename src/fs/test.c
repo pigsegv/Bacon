@@ -8,5 +8,6 @@ int main(void) {
          "inode_size: %lu\n",
          sizeof(struct fs_ext2_sb), sizeof(struct fs_ext2_bg_desc),
          sizeof(struct fs_ext2_inode));
+
   return 0;
 }

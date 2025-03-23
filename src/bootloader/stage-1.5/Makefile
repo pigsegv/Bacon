@@ -34,7 +34,11 @@ $(OBJ)/entry.bin: $(ENTRY_BIN_SRCS)
 	@echo built $@
 
 $(OBJ)/protected.bin: $(OBJS) $(OBJ)/entry.bin
-	@$(ROOT_PATH)/scripts/link-bootloader.sh $(ROOT_PATH)/linker-scripts/bootloader-1.5.ld $(OBJ)/entry.bin $@ "$(OBJS)"
+	@$(ROOT_PATH)/scripts/link-bootloader.sh \
+		$(ROOT_PATH)/linker-scripts/bootloader-1.5.ld \
+		$(OBJ)/entry.bin \
+		$@ \
+		"$(OBJS)"
 	@echo built $@
 
 -include $(DEPS)

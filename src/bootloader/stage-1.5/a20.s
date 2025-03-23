@@ -40,7 +40,6 @@ macro wait_a20 {
 	cli
 }
 
-; This function (procedure, whatever) is absolutely abhorrent
 enable_A20:
 	cli
 
@@ -106,7 +105,7 @@ enable_A20:
 	test al, 2
 	jnz .exit
 	or al, 2
-	and al, 0xFE
+	and al, 0xfe
 	out 0x92, al
 
 	wait_a20
@@ -174,7 +173,7 @@ check_A20:
 	xor ax, ax
 	mov es, ax
 	mov di, 0x7dfe
- 	mov [di], WORD 0x6969
+ 	mov [es:di], WORD 0x6969
 	mov ax, [es:di]
 
 	cmp ax, [si]
