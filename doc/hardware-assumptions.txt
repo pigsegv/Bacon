@@ -1,4 +1,0 @@
-1. 512 byte sectors
-2. PIC exists
-3. PIT exists
-4. If CPUID is supported, the EFLAGS ID bit is also supported.

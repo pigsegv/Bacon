@@ -24,7 +24,7 @@ INCLUDE := $(ROOT_PATH)/include
 
 EXTERNAL_DIR := $(ROOT_PATH)/external
 
-CFLAGS := -I$(SRC) -I$(INCLUDE) -I$(ROOT_PATH) -I$(EXTERNAL_DIR)
+CFLAGS := -I$(SRC) -I$(INCLUDE) -I$(ROOT_PATH) -isystem $(EXTERNAL_DIR)
 ASMFLAGS :=
 LDFLAGS := -Wl,-rpath=$(BIN) -L$(BIN)
 

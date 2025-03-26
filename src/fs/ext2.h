@@ -121,21 +121,6 @@ struct fs_ext2_inode {
   uint8_t osd2[12];
 } __attribute__((packed));
 
-/*
- * Returns the number of bytes read. Returns -1 on error.
- * Reads the entire file if count is -1.
- */
-int64_t fs_ext2_read(const char *path, void *buf, int64_t offset,
-                     int64_t count);
-
-/*
- * Returns a pointer to an inode structure that is a copy of the first inode
- * of the file specified by "path".
- * Returned pointer will be overwritten on subsequent calls.
- * Returns NULL on error.
- */
-struct fs_ext2_inode *fs_ext2_get_inode(const char *path);
-
 // TODO: Implement write operations
 
 #endif // FS_EXT_2_H
