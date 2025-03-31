@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+#define FS_EXT2_SB_SECTORS 2
+#define FS_EXT2_SB_OFFSET_SECTORS 2
+
 struct fs_ext2_sb {
   uint32_t inodes_count;
   uint32_t blocks_count;
@@ -121,6 +124,6 @@ struct fs_ext2_inode {
   uint8_t osd2[12];
 } __attribute__((packed));
 
-// TODO: Implement write operations
+extern struct fs_ext2_sb fs_ext2_sb;
 
 #endif // FS_EXT_2_H

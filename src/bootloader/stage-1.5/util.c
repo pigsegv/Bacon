@@ -3,7 +3,7 @@
 
 #include "util.h"
 
-#define UTIL_STR_COLOUR 0x1F
+#define UTIL_STR_COLOUR 0x1f
 #define UTIL_UINT32_MAX_DIGITS 10
 
 static volatile char *vga_mem = (char *)0xb8000;

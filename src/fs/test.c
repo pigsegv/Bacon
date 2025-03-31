@@ -4,49 +4,37 @@
 #include <stdint.h>
 #include <assert.h>
 #include <string.h>
+#include <stdbool.h>
 
-#include "ext2.h"
+#include "fs.h"
 
-#define SECTOR_SIZE 512
-#define SB_SIZE 1024
+#define ERROR(msg)                                  \
+  do {                                              \
+    fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); \
+    perror(msg);                                    \
+  } while (false)
 
 static FILE *fs_img = NULL;
-static int img_size = 0;
-
-static uint64_t sector = 0;
 
 char scratch[4096];
 
-void *(*fs_read_sectors)(uint64_t offset, uint64_t count) = NULL;
-
-void *read_sectors(uint64_t offset, uint64_t count) {
-  assert(img_size >= SB_SIZE + 1024 &&
-         "Image smaller than minimum ext2 filesystem size");
-  assert(count * SECTOR_SIZE <= sizeof(scratch));
-
-  if (fseek(fs_img, offset * SECTOR_SIZE, SEEK_SET) < 0) {
-    fprintf(stderr, "%s:%d: ", __FILE__, __LINE__);
-    perror("Failed to read file");
+void read_sectors(void *dest, uint64_t offset, uint64_t count) {
+  if (fseek(fs_img, offset * FS_SECTOR_SIZE, SEEK_SET) < 0) {
+    ERROR("Failed to read file");
     exit(EXIT_FAILURE);
   }
 
   int iter = 100;
-  int n = count * SECTOR_SIZE;
+  int n = count * FS_SECTOR_SIZE;
   do {
-    n -=
-      fread(&scratch[count * SECTOR_SIZE - n], 1, count * SECTOR_SIZE, fs_img);
-  } while (n && --iter);
+    n -= fread(&((char *)dest)[count * FS_SECTOR_SIZE - n], 1,
+               count * FS_SECTOR_SIZE, fs_img);
+  } while (n && iter++);
 
   if (iter == 0 && n != 0) {
     fprintf(stderr, "Failed to read file\n");
     exit(EXIT_FAILURE);
   }
-  return scratch;
-}
-
-int init_sb(struct fs_ext2_sb *sb) {
-  memcpy(sb, fs_read_sectors(sector + 2, 2), sizeof(*sb));
-  return 0;
 }
 
 int main(int argc, char **argv) {
@@ -57,23 +45,29 @@ int main(int argc, char **argv) {
 
   fs_img = fopen(argv[1], "rb");
   if (fs_img == NULL) {
-    fprintf(stderr, "%s:%d: ", __FILE__, __LINE__);
-    perror("Failed to open file");
+    ERROR("Failed to open file");
     return 1;
   }
 
   struct stat stat;
   if (fstat(fileno(fs_img), &stat) != 0) {
-    fprintf(stderr, "%s:%d: ", __FILE__, __LINE__);
-    perror("Failed to get file size");
+    ERROR("Failed to get file size");
     return 1;
   }
-  img_size = stat.st_size;
 
   fs_read_sectors = read_sectors;
-  struct fs_ext2_sb sb = { 0 };
-  init_sb(&sb);
-  printf("%x\n", sb.magic);
+
+  struct fs_vtable v = {
+    .read_sectors = read_sectors,
+    .memcpy = memcpy,
+    .malloc = malloc,
+    .free = free,
+  };
+
+  if (fs_init(&v, 0) != 0) {
+    fprintf(stderr, "Invalid filesystem\n");
+    return 1;
+  }
 
   return 0;
 }
