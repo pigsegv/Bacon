@@ -5,8 +5,10 @@
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
+#include <math.h>
 
 #include "fs.h"
+#include "common.h"
 
 #define ERROR(msg)                                  \
   do {                                              \
@@ -16,19 +18,17 @@
 
 static FILE *fs_img = NULL;
 
-char scratch[4096];
-
 void read_sectors(void *dest, uint64_t offset, uint64_t count) {
-  if (fseek(fs_img, offset * FS_SECTOR_SIZE, SEEK_SET) < 0) {
+  if (fseek(fs_img, offset * FS_COM_SECTOR_SIZE, SEEK_SET) < 0) {
     ERROR("Failed to read file");
     exit(EXIT_FAILURE);
   }
 
   int iter = 100;
-  int n = count * FS_SECTOR_SIZE;
+  int n = count * FS_COM_SECTOR_SIZE;
   do {
-    n -= fread(&((char *)dest)[count * FS_SECTOR_SIZE - n], 1,
-               count * FS_SECTOR_SIZE, fs_img);
+    n -= fread(&((char *)dest)[count * FS_COM_SECTOR_SIZE - n], 1,
+               count * FS_COM_SECTOR_SIZE, fs_img);
   } while (n && iter++);
 
   if (iter == 0 && n != 0) {
@@ -55,11 +55,11 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  fs_read_sectors = read_sectors;
-
-  struct fs_vtable v = {
+  struct fs_com_vtable v = {
     .read_sectors = read_sectors,
+
     .memcpy = memcpy,
+
     .malloc = malloc,
     .free = free,
   };

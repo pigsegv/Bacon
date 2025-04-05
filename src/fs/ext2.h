@@ -124,6 +124,12 @@ struct fs_ext2_inode {
   uint8_t osd2[12];
 } __attribute__((packed));
 
-extern struct fs_ext2_sb fs_ext2_sb;
+enum fs_ext2_mnt {
+  FS_EXT2_MNT_NONE = 0,
+  FS_EXT2_MNT_INVALID_SB,
+  FS_EXT2_MNT_INCOMPAT,
+};
+
+enum fs_ext2_mnt fs_ext2_init(uint64_t sector);
 
 #endif // FS_EXT_2_H

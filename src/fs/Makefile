@@ -1,8 +1,8 @@
 OBJ := $(OBJ)/src/fs
 
-CFLAGS += -Wall -Wextra -ggdb3 -std=gnu23 -fPIC -O0
+CFLAGS += -Wall -Wextra -ggdb3 -std=gnu23 -fPIC -O0 -flto
 
-LDFLAGS +=
+LDFLAGS += -flto
 ASMFLAGS := 
 
 SRCS := $(shell find -type f -name "*.c" -printf "%P\n")
@@ -16,7 +16,7 @@ endif
 BINARIES := $(BIN)/fs-test
 
 .PHONY: all
-all: $(BINARIES)
+all: $(BINARIES) $(ASMS)
 
 $(BIN)/fs-test: $(OBJS)
 	@$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)

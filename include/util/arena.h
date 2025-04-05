@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#error "Reimplement using linked lists"
+
 #define arena_save(arena, r)      \
   do {                            \
     (*(r)) = (arena).base_offset; \
