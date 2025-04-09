@@ -79,6 +79,10 @@ enum fs_ext2_mnt_err fs_ext2_init(uint64_t s) {
     fs_com_free(buf);
   }
 
+  for (uint64_t i = 0; i < num_bg; i++) {
+    printf("%u\n", bg_descs[i].dirs_count);
+  }
+
   return FS_EXT2_MNT_ERR_NONE;
 }
 

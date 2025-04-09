@@ -15,5 +15,6 @@ enum fs_type {
 extern enum fs_type fs_type;
 
 int fs_init(struct fs_com_vtable *v, uint64_t offset);
+void fs_cleanup(void);
 
 #endif // FS_H

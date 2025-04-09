@@ -69,5 +69,6 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  fs_cleanup();
   return 0;
 }

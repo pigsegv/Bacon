@@ -37,3 +37,14 @@ int fs_init(struct fs_com_vtable *v, uint64_t offset) {
 
   return res;
 }
+
+void fs_cleanup(void) {
+  switch (fs_type) {
+    case FS_TYPE_EXT2:
+      fs_ext2_cleanup();
+      break;
+
+    default:
+      break;
+  }
+}
