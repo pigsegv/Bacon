@@ -37,7 +37,7 @@ void print_uint32(uint32_t n, uint32_t offset) {
   print_cstr(&buf[i], offset);
 }
 
-static inline char nibble_to_hex(uint8_t nibble) {
+static char nibble_to_hex(uint8_t nibble) {
   return (nibble < 10) ? nibble + '0' : (nibble - 10) + 'a';
 }
 

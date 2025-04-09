@@ -52,9 +52,9 @@ struct fs_ext2_sb {
 
   uint16_t sb_block_group;
 
-  uint32_t opt_features;
-  uint32_t req_features;
-  uint32_t ro_features;
+  uint32_t feature_compat;
+  uint32_t feature_incompat;
+  uint32_t feature_ro_compat;
 
   uint8_t uuid[16];
   uint8_t volume_name[16];
@@ -124,12 +124,22 @@ struct fs_ext2_inode {
   uint8_t osd2[12];
 } __attribute__((packed));
 
-enum fs_ext2_mnt {
-  FS_EXT2_MNT_NONE = 0,
-  FS_EXT2_MNT_INVALID_SB,
-  FS_EXT2_MNT_INCOMPAT,
+enum fs_ext2_mnt_err {
+  FS_EXT2_MNT_ERR_NONE = 0,
+  FS_EXT2_MNT_ERR_INVALID_SB,
+  FS_EXT2_MNT_ERR_INCOMPAT,
 };
 
-enum fs_ext2_mnt fs_ext2_init(uint64_t sector);
+enum fs_ext2_incompat {
+  FS_EXT2_INCOMPAT_NONE = 0x0,
+  FS_EXT2_INCOMPAT_COMPRESSION = 0x1,
+  FS_EXT2_INCOMPAT_FILETYPE = 0x2,
+  FS_EXT2_INCOMPAT_RECOVER = 0x4,
+  FS_EXT2_INCOMPAT_JOURNAL_DEV = 0x8,
+  FS_EXT_INCOMPAT_META_BG = 0x10,
+};
+
+enum fs_ext2_mnt_err fs_ext2_init(uint64_t sector);
+void fs_ext2_cleanup(void);
 
 #endif // FS_EXT_2_H
