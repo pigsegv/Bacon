@@ -14,10 +14,17 @@ static uint64_t sector = 0;
 
 static struct fs_ext2_sb sb = { 0 };
 static struct fs_ext2_bg_desc *bg_descs = NULL;
+
 static uint64_t num_bg = 0;
 static uint64_t block_size = 0;
 static uint64_t frag_size = 0;
 static uint64_t sectors_per_block = 0;
+
+uint64_t fs_read_file(const char *path, char *dest, uint64_t offset,
+                      int64_t n) {
+  (void)path, (void)dest, (void)offset, (void)n;
+  return n;
+}
 
 enum fs_ext2_mnt_err fs_ext2_init(uint64_t s) {
   static_assert(FS_COM_SECTOR_SIZE == 512);
@@ -25,11 +32,11 @@ enum fs_ext2_mnt_err fs_ext2_init(uint64_t s) {
   sector = s;
 
   {
-    void *buf = fs_com_malloc(FS_EXT2_SB_SECTORS * FS_COM_SECTOR_SIZE);
-    fs_com_read_sectors(buf, sector + FS_EXT2_SB_OFFSET_SECTORS,
-                        FS_EXT2_SB_SECTORS);
-    fs_com_memcpy(&sb, buf, sizeof(sb));
-    fs_com_free(buf);
+    void *buf = fs_com_vt.malloc(FS_EXT2_SB_SECTORS * FS_COM_SECTOR_SIZE);
+    fs_com_vt.read_sectors(buf, sector + FS_EXT2_SB_OFFSET_SECTORS,
+                           FS_EXT2_SB_SECTORS);
+    fs_com_vt.memcpy(&sb, buf, sizeof(sb));
+    fs_com_vt.free(buf);
   }
 
   if (sb.magic != 0xef53) {
@@ -67,26 +74,22 @@ enum fs_ext2_mnt_err fs_ext2_init(uint64_t s) {
       IDIV_ROUNDU(num_bg * sizeof(*bg_descs), block_size);
 
     uint64_t bg_descs_size = num_bg * sizeof(*bg_descs);
-    bg_descs = fs_com_malloc(bg_descs_size);
+    bg_descs = fs_com_vt.malloc(bg_descs_size);
 
-    void *buf = fs_com_malloc(sectors_per_block * FS_COM_SECTOR_SIZE);
+    void *buf = fs_com_vt.malloc(sectors_per_block * FS_COM_SECTOR_SIZE);
 
     // Guaranteed to be sector-aligned (I hope)
-    fs_com_read_sectors(buf, sector + bg_desc_block * sectors_per_block,
-                        bg_desc_num_blocks * sectors_per_block);
-    fs_com_memcpy(bg_descs, buf, bg_descs_size);
+    fs_com_vt.read_sectors(buf, sector + bg_desc_block * sectors_per_block,
+                           bg_desc_num_blocks * sectors_per_block);
+    fs_com_vt.memcpy(bg_descs, buf, bg_descs_size);
 
-    fs_com_free(buf);
-  }
-
-  for (uint64_t i = 0; i < num_bg; i++) {
-    printf("%u\n", bg_descs[i].dirs_count);
+    fs_com_vt.free(buf);
   }
 
   return FS_EXT2_MNT_ERR_NONE;
 }
 
 void fs_ext2_cleanup(void) {
-  fs_com_free(bg_descs);
+  fs_com_vt.free(bg_descs);
   bg_descs = NULL;
 }

@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <math.h>
+#include <argp.h>
 
 #include "fs.h"
 #include "common.h"
@@ -15,6 +16,10 @@
     fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); \
     perror(msg);                                    \
   } while (false)
+
+#define NUM_ARGS 1
+
+#define USAGE 0xc0ffee
 
 static FILE *fs_img = NULL;
 
@@ -37,13 +42,105 @@ void read_sectors(void *dest, uint64_t offset, uint64_t count) {
   }
 }
 
-int main(int argc, char **argv) {
-  if (argc != 2) {
-    fprintf(stderr, "Usage: %s [IMAGE]\n", argv[0]);
-    return 1;
+struct argp_option options[] = {
+  {
+    .name = "image",
+    .key = 'i',
+    .arg = "IMAGE",
+    .doc = "Specify the filesystem image to use",
+  },
+
+  {
+    .name = "print",
+    .key = 'p',
+    .doc = "Print the contents of the file",
+  },
+
+  {
+    .name = "help",
+    .key = 'h',
+    .doc = "Show this message",
+  },
+
+  {
+    .name = "usage",
+    .key = USAGE,
+    .doc = "Show usage",
+  },
+
+  { 0 },
+};
+
+struct args {
+  const char *img_path;
+  const char *file_path;
+  bool print;
+};
+
+static error_t parser(int key, char *arg, struct argp_state *state) {
+  struct args *args = state->input;
+  switch (key) {
+    case 'h': {
+      argp_state_help(state, state->out_stream, ARGP_HELP_STD_HELP);
+      break;
+    }
+
+    case USAGE: {
+      argp_state_help(state, state->out_stream,
+                      ARGP_HELP_STD_USAGE | ARGP_HELP_EXIT_OK);
+      break;
+    }
+
+    case 'i': {
+      args->img_path = arg;
+      break;
+    }
+
+    case 'p': {
+      args->print = true;
+      break;
+    }
+
+    case ARGP_KEY_ARG: {
+      if (state->arg_num >= NUM_ARGS) {
+        argp_usage(state);
+      }
+
+      args->file_path = arg;
+
+      break;
+    }
+
+    case ARGP_KEY_END: {
+      if (state->arg_num < NUM_ARGS) {
+        argp_usage(state);
+      }
+
+      break;
+    }
+
+    default:
+      return ARGP_ERR_UNKNOWN;
   }
 
-  fs_img = fopen(argv[1], "rb");
+  return 0;
+}
+
+static const char *args_doc = "FILEPATH";
+static const char *doc = "An ext2 file system implementation";
+static struct args args = { 0 };
+
+int main(int argc, char **argv) {
+  struct argp argp = {
+    .options = options,
+    .parser = parser,
+    .args_doc = args_doc,
+    .doc = doc,
+  };
+
+  argp_parse(&argp, argc, argv, ARGP_NO_HELP, NULL, &args);
+
+  fs_img = fopen(args.img_path, "rb");
   if (fs_img == NULL) {
     ERROR("Failed to open file");
     return 1;
@@ -70,5 +167,6 @@ int main(int argc, char **argv) {
   }
 
   fs_cleanup();
+  fclose(fs_img);
   return 0;
 }

@@ -1,20 +1,10 @@
 #include "fs.h"
 
-void (*fs_com_read_sectors)(void *dest, uint64_t offset, uint64_t count) = NULL;
-void *(*fs_com_memcpy)(void *restrict dest, const void *restrict src,
-                       size_t n) = NULL;
-void *(*fs_com_malloc)(size_t size) = NULL;
-void (*fs_com_free)(void *ptr) = NULL;
-
+struct fs_com_vtable fs_com_vt = { 0 };
 enum fs_type fs_type = FS_TYPE_NONE;
 
 int fs_init(struct fs_com_vtable *v, uint64_t offset) {
-  fs_com_read_sectors = v->read_sectors;
-
-  fs_com_memcpy = v->memcpy;
-
-  fs_com_malloc = v->malloc;
-  fs_com_free = v->free;
+  fs_com_vt = *v;
 
   fs_type = FS_TYPE_EXT2; // TODO: Add support for other filesystems
 
