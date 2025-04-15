@@ -3,9 +3,6 @@
 
 #include <stdint.h>
 
-#define FS_EXT2_SB_SECTORS 2
-#define FS_EXT2_SB_OFFSET_SECTORS 2
-
 struct fs_ext2_sb {
   uint32_t inodes_count;
   uint32_t blocks_count;

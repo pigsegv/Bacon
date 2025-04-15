@@ -2,6 +2,7 @@
 #include "common.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #define IDIV_ROUNDU(x, y)                \
   ({                                     \
@@ -9,6 +10,9 @@
     auto tmp2 = (y);                     \
     tmp1 / tmp2 + (tmp1 % tmp2 ? 1 : 0); \
   })
+
+#define SB_SIZE 1024
+#define SB_OFFSET 1024
 
 static uint64_t sector = 0;
 
@@ -27,15 +31,17 @@ uint64_t fs_read_file(const char *path, char *dest, uint64_t offset,
 }
 
 enum fs_ext2_mnt_err fs_ext2_init(uint64_t s) {
-  static_assert(FS_COM_SECTOR_SIZE == 512);
-
   sector = s;
 
   {
-    void *buf = fs_com_vt.malloc(FS_EXT2_SB_SECTORS * FS_COM_SECTOR_SIZE);
-    fs_com_vt.read_sectors(buf, sector + FS_EXT2_SB_OFFSET_SECTORS,
-                           FS_EXT2_SB_SECTORS);
-    fs_com_vt.memcpy(&sb, buf, sizeof(sb));
+    const uint32_t sb_offset_sectors = SB_SIZE / FS_COM_SECTOR_SIZE;
+    const uint32_t sb_off_from_sect = SB_SIZE % FS_COM_SECTOR_SIZE;
+    const uint32_t sb_sectors =
+      IDIV_ROUNDU(sb_off_from_sect + SB_SIZE, FS_COM_SECTOR_SIZE);
+
+    void *buf = fs_com_vt.malloc(sb_sectors * FS_COM_SECTOR_SIZE);
+    fs_com_vt.read_sectors(buf, sector + sb_offset_sectors, sb_sectors);
+    fs_com_vt.memcpy(&sb, buf + sb_off_from_sect, sizeof(sb));
     fs_com_vt.free(buf);
   }
 
@@ -66,24 +72,31 @@ enum fs_ext2_mnt_err fs_ext2_init(uint64_t s) {
     frag_size = 1024 >> -sb.log_frag_size;
   }
 
-  sectors_per_block = block_size / FS_COM_SECTOR_SIZE; // See static_assert
+  sectors_per_block = IDIV_ROUNDU(block_size, FS_COM_SECTOR_SIZE);
 
   {
-    uint32_t bg_desc_block = (block_size == 1024) ? 2 : 1;
-    uint32_t bg_desc_num_blocks =
-      IDIV_ROUNDU(num_bg * sizeof(*bg_descs), block_size);
+    const uint32_t bg_desc_block = (block_size == 1024) ? 2 : 1;
 
-    uint64_t bg_descs_size = num_bg * sizeof(*bg_descs);
+    const uint64_t bg_descs_size = num_bg * sizeof(*bg_descs);
     bg_descs = fs_com_vt.malloc(bg_descs_size);
 
-    void *buf = fs_com_vt.malloc(sectors_per_block * FS_COM_SECTOR_SIZE);
+    const uint64_t desc_offset_sectors =
+      bg_desc_block * block_size / FS_COM_SECTOR_SIZE;
+    const uint64_t desc_off_from_sect =
+      bg_desc_block * block_size % FS_COM_SECTOR_SIZE;
+    const uint64_t desc_sectors =
+      IDIV_ROUNDU(bg_descs_size + desc_off_from_sect, FS_COM_SECTOR_SIZE);
 
-    // Guaranteed to be sector-aligned (I hope)
-    fs_com_vt.read_sectors(buf, sector + bg_desc_block * sectors_per_block,
-                           bg_desc_num_blocks * sectors_per_block);
-    fs_com_vt.memcpy(bg_descs, buf, bg_descs_size);
+    void *buf = fs_com_vt.malloc(desc_sectors * FS_COM_SECTOR_SIZE);
+
+    fs_com_vt.read_sectors(buf, sector + desc_offset_sectors, desc_sectors);
+    fs_com_vt.memcpy(bg_descs, buf + desc_off_from_sect, bg_descs_size);
 
     fs_com_vt.free(buf);
+  }
+
+  for (long unsigned int i = 0; i < num_bg; i++) {
+    printf("%d\n", bg_descs[i].dirs_count);
   }
 
   return FS_EXT2_MNT_ERR_NONE;
