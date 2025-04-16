@@ -12,9 +12,11 @@ enum fs_type {
   FS_TYPE_EXT2,
 };
 
+struct fs_inode;
+
 extern enum fs_type fs_type;
 
-int fs_init(struct fs_com_vtable *v, uint64_t offset);
+int fs_init(struct fs_com_vtable *v, uint32_t sector_size, uint64_t offset);
 uint64_t fs_read_file(const char *path, char *dest, uint64_t offset, int64_t n);
 void fs_cleanup(void);
 

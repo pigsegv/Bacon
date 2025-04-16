@@ -69,6 +69,14 @@ struct fs_ext2_sb {
   uint32_t journal_inode;
   uint32_t journal_dev;
   uint32_t last_orphan;
+
+  uint8_t hash_seed[16];
+  uint8_t def_hash_version;
+
+  uint8_t padding[3];
+
+  uint32_t default_mount_opts;
+  uint32_t first_meta_bg;
 } __attribute__((packed));
 
 struct fs_ext2_bg_desc {
@@ -136,7 +144,9 @@ enum fs_ext2_incompat {
   FS_EXT_INCOMPAT_META_BG = 0x10,
 };
 
-enum fs_ext2_mnt_err fs_ext2_init(uint64_t sector);
+uint64_t fs_ext2_read_file(void *dest, uint64_t offset, uint64_t count,
+                           const char *path);
+enum fs_ext2_mnt_err fs_ext2_init(uint32_t sector_size, uint64_t sector);
 void fs_ext2_cleanup(void);
 
 #endif // FS_EXT_2_H

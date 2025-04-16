@@ -3,7 +3,7 @@
 struct fs_com_vtable fs_com_vt = { 0 };
 enum fs_type fs_type = FS_TYPE_NONE;
 
-int fs_init(struct fs_com_vtable *v, uint64_t offset) {
+int fs_init(struct fs_com_vtable *v, uint32_t sector_size, uint64_t offset) {
   fs_com_vt = *v;
 
   fs_type = FS_TYPE_EXT2; // TODO: Add support for other filesystems
@@ -17,7 +17,7 @@ int fs_init(struct fs_com_vtable *v, uint64_t offset) {
 	 */
   switch (fs_type) {
     case FS_TYPE_EXT2:
-      res = fs_ext2_init(offset);
+      res = fs_ext2_init(sector_size, offset);
       break;
 
     default:

@@ -17,10 +17,10 @@ int print_cstr(const char *str, uint32_t offset) {
     str++;
   }
 
-  return i;
+  return i / 2;
 }
 
-void print_uint32(uint32_t n, uint32_t offset) {
+int print_uint32(uint32_t n, uint32_t offset) {
   char buf[UTIL_UINT32_MAX_DIGITS + 1];
   const uint32_t buf_size = sizeof(buf);
 
@@ -34,14 +34,14 @@ void print_uint32(uint32_t n, uint32_t offset) {
     n /= 10;
   }
 
-  print_cstr(&buf[i], offset);
+  return print_cstr(&buf[i], offset);
 }
 
 static char nibble_to_hex(uint8_t nibble) {
   return (nibble < 10) ? nibble + '0' : (nibble - 10) + 'a';
 }
 
-void print_uint32_hex(uint32_t n, uint32_t offset) {
+int print_uint32_hex(uint32_t n, uint32_t offset) {
   char buf[sizeof(n) * 2 + 1];
   const uint32_t buf_size = sizeof(buf);
 
@@ -58,7 +58,7 @@ void print_uint32_hex(uint32_t n, uint32_t offset) {
     n /= 16;
   }
 
-  print_cstr(&buf[i], offset);
+  return print_cstr(&buf[i], offset);
 }
 
 size_t kstrlen(const char *s) {

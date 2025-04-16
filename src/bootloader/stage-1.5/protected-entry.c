@@ -39,16 +39,13 @@ int main(void) {
     // TODO: Rework interrupts API to be less clunky
 
     asm volatile("lidt [%[idtr]]\n" : : [idtr] "r"(&desc));
-    asm volatile("sti\n" :);
+    asm volatile("sti\n");
   }
 
   struct mmap *mmap = (struct mmap *)0xfc00;
-  print_uint32(mmap->count * sizeof(struct mmap_entry), 0);
+  print_uint32(mmap->count, 0);
 
   print_cstr("Hello", 160);
-
-  [[maybe_unused]] volatile int a[16] = { 0 };
-
   print_cstr("Hi", 80);
 
   asm volatile("cli\n"

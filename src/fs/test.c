@@ -17,6 +17,8 @@
     perror(msg);                                    \
   } while (false)
 
+#define SECTOR_SIZE 4096
+
 #define NUM_ARGS 1
 
 #define USAGE 0xc0ffee
@@ -24,16 +26,16 @@
 static FILE *fs_img = NULL;
 
 void read_sectors(void *dest, uint64_t offset, uint64_t count) {
-  if (fseek(fs_img, offset * FS_COM_SECTOR_SIZE, SEEK_SET) < 0) {
+  if (fseek(fs_img, offset * SECTOR_SIZE, SEEK_SET) < 0) {
     ERROR("Failed to read file");
     exit(EXIT_FAILURE);
   }
 
   int iter = 100;
-  int n = count * FS_COM_SECTOR_SIZE;
+  int n = count * SECTOR_SIZE;
   do {
-    n -= fread(&((char *)dest)[count * FS_COM_SECTOR_SIZE - n], 1,
-               count * FS_COM_SECTOR_SIZE, fs_img);
+    n -= fread(&((char *)dest)[count * SECTOR_SIZE - n], 1, count * SECTOR_SIZE,
+               fs_img);
   } while (n && iter++);
 
   if (iter == 0 && n != 0) {
@@ -161,7 +163,7 @@ int main(int argc, char **argv) {
     .free = free,
   };
 
-  if (fs_init(&v, 0) != 0) {
+  if (fs_init(&v, SECTOR_SIZE, 0) != 0) {
     fprintf(stderr, "Invalid filesystem\n");
     return 1;
   }

@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define FS_COM_SECTOR_SIZE 339
-
 struct fs_com_vtable {
   void (*read_sectors)(void *dest, uint64_t offset, uint64_t count);
 

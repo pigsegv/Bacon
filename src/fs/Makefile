@@ -1,8 +1,9 @@
 OBJ := $(OBJ)/src/fs
 
-CFLAGS += -Wall -Wextra -ggdb3 -std=gnu23 -fPIC -O0 -flto
+CFLAGS += -Wall -Wextra -ggdb3 -std=gnu23 -fPIC -O0 -flto -fsanitize=address
 
-LDFLAGS += -flto
+
+LDFLAGS += -flto -fsanitize=address
 ASMFLAGS := 
 
 SRCS := $(shell find -type f -name "*.c" -printf "%P\n")
