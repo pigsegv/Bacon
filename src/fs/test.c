@@ -108,6 +108,10 @@ static error_t parser(int key, char *arg, struct argp_state *state) {
         argp_usage(state);
       }
 
+      if (args->img_path == NULL) {
+        argp_usage(state);
+      }
+
       args->file_path = arg;
 
       break;
@@ -158,8 +162,10 @@ int main(int argc, char **argv) {
     .read_sectors = read_sectors,
 
     .memcpy = memcpy,
+    .strlen = strlen,
 
     .malloc = malloc,
+    .realloc = realloc,
     .free = free,
   };
 

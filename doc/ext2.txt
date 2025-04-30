@@ -1,0 +1,5 @@
+Uses revision 1.
+
+Supported required features:
+-> File type
+

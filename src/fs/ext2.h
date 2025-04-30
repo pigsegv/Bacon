@@ -129,9 +129,18 @@ struct fs_ext2_inode {
   uint8_t osd2[12];
 } __attribute__((packed));
 
+struct fs_ext2_dir {
+  uint32_t inode;
+  uint16_t rec_len;
+  uint8_t name_len;
+  uint8_t file_type;
+  char name[];
+} __attribute__((packed));
+
 enum fs_ext2_mnt_err {
   FS_EXT2_MNT_ERR_NONE = 0,
   FS_EXT2_MNT_ERR_INVALID_SB,
+  FS_EXT2_MNT_ERR_UNSUPPORTED_VERSION,
   FS_EXT2_MNT_ERR_INCOMPAT,
 };
 
