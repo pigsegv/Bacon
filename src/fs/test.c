@@ -79,6 +79,8 @@ struct args {
   bool print;
 };
 
+static int args_count = 0;
+
 static error_t parser(int key, char *arg, struct argp_state *state) {
   struct args *args = state->input;
   switch (key) {
@@ -113,6 +115,7 @@ static error_t parser(int key, char *arg, struct argp_state *state) {
       }
 
       args->file_path = arg;
+      args_count++;
 
       break;
     }
@@ -146,6 +149,10 @@ int main(int argc, char **argv) {
 
   argp_parse(&argp, argc, argv, ARGP_NO_HELP, NULL, &args);
 
+  if (args_count == 0 && args.print) {
+    argp_usage(NULL);
+  }
+
   fs_img = fopen(args.img_path, "rb");
   if (fs_img == NULL) {
     ERROR("Failed to open file");
@@ -172,6 +179,23 @@ int main(int argc, char **argv) {
   if (fs_init(&v, SECTOR_SIZE, 0) != 0) {
     fprintf(stderr, "Invalid filesystem\n");
     return 1;
+  }
+
+  if (args.print) {
+    uint64_t n;
+    if (fs_file_size(args.file_path, &n) < 0) {
+      fprintf(stderr, "Failed to get file size from image\n");
+      return 1;
+    }
+
+    char *buf = malloc(n + 1);
+    buf[n] = 0;
+
+    fs_read_file(buf, 0, n, args.file_path);
+
+    printf("%.*s", (int)n, buf);
+
+    free(buf);
   }
 
   fs_cleanup();

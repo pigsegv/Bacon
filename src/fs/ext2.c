@@ -1,5 +1,15 @@
 #include "ext2.h"
 #include "common.h"
+#define UTIL_STRING_VIEW_IMPLEMENTATION
+#include "util/string_view.h"
+
+#define DA_USE_CUSTOM
+#define DA_REALLOC fs_com_vt.realloc
+#define DA_MEM_FREE fs_com_vt.free
+#define DA_ASSERT(x)
+#define DA_MEMCPY fs_com_vt.memcpy
+#define DA_MEMMOVE fs_com_vt.memmove
+#include "include/util/dynamic_array.h"
 
 #include <stdio.h>
 
@@ -10,40 +20,21 @@
     tmp1 / tmp2 + (tmp1 % tmp2 ? 1 : 0); \
   })
 
-#define DA_INIT_CAPACITY 8
-#define DA_GROW_FACTOR 1.5f
+#define MIN(x, y)      \
+  ({                   \
+    auto _x = (x);     \
+    auto _y = (y);     \
+    _x < _y ? _x : _y; \
+  })
 
-#define DA_APPEND(arr, item)                                                   \
-  do {                                                                         \
-    if ((arr)->count >= (arr)->capacity) {                                     \
-      (arr)->capacity = (arr)->capacity == 0                                   \
-                          ? DA_INIT_CAPACITY                                   \
-                          : DA_GROW_FACTOR * (arr)->capacity;                  \
-      (arr)->items = fs_com_vt.realloc((arr)->items, (arr)->capacity *         \
-                                                       sizeof(*(arr)->items)); \
-    }                                                                          \
-    (arr)->items[(arr)->count++] = (item);                                     \
-  } while (0)
-
-#define DA_FREE(arr)              \
-  do {                            \
-    fs_com_vt.free((arr)->items); \
-    (arr)->items = NULL;          \
-    (arr)->count = 0;             \
-    (arr)->capacity = 0;          \
-  } while (0)
-
-#define DA_AT(arr, index) (*({ &(arr).items[(index)]; }))
-
-#define MIN(x, y) ((x) < (y) ? (x) : (y))
-
-struct string_view {
-  const char *view;
-  uint32_t length;
-};
+#define GET_INODE_SIZE(inode)                            \
+  ((uint64_t)(inode).size |                              \
+   (((inode).mode & 0x8000) /* 0x8000 -> Regular file */ \
+      ? (uint64_t)(inode).dir_acl << 32                  \
+      : 0))
 
 struct string_views {
-  struct string_view *items;
+  struct sv *items;
   uint64_t count;
   uint64_t capacity;
 };
@@ -79,7 +70,7 @@ static struct fs_ext2_inode root_inode = { 0 };
 struct string_views split_path(const char *path) {
   struct string_views views = { 0 };
 
-  struct string_view v = {
+  struct sv v = {
     .view = path,
   };
   while (*path) {
@@ -104,8 +95,10 @@ struct string_views split_path(const char *path) {
   return views;
 }
 
-static char *read_inode(struct fs_ext2_inode *inode) {
-  uint32_t blocks_count = IDIV_ROUNDU(inode->size, block_size);
+static char *read_inode(const struct fs_ext2_inode *inode) {
+  uint64_t size = GET_INODE_SIZE(*inode);
+
+  uint32_t blocks_count = IDIV_ROUNDU(size, block_size);
   char *buf = fs_com_vt.malloc(blocks_count * block_size);
 
   char *cursor = buf;
@@ -160,12 +153,11 @@ Exit:
   return buf;
 }
 
-static int read_dir(const struct fs_ext2_inode *dir,
-                    const struct string_view *file,
+static int read_dir(const struct fs_ext2_inode *dir, const struct sv *file,
                     struct fs_ext2_inode *inode) {
   int code = 0;
 
-  if (dir->mode & 0x4000 == 0) {
+  if ((dir->mode & 0x4000) == 0) {
     code = 1;
     goto Exit;
   }
@@ -176,6 +168,33 @@ static int read_dir(const struct fs_ext2_inode *dir,
     code = 1;
     goto Exit;
   }
+
+  char *tmp = buf;
+  while (tmp < buf + dir->size) {
+    struct fs_ext2_dir *entry = (struct fs_ext2_dir *)tmp;
+
+    if (entry->inode == 0) {
+      continue;
+    }
+
+    if (file->length == entry->name_len &&
+        sv_cmp(file, &(struct sv){ .view = entry->name,
+                                   .length = entry->name_len }) == 0) {
+      uint32_t bg = (entry->inode - 1) / sb.inodes_per_group;
+      uint32_t id = (entry->inode - 1) % sb.inodes_per_group;
+      uint32_t block = bg_descs[bg].inode_table;
+
+      read_from_disk(inode, block_size * block + id * sb.inode_size,
+                     sizeof(*inode));
+      goto Exit;
+    }
+
+    tmp += entry->rec_len;
+  }
+
+  // File not found
+  code = 1;
+  goto Exit;
 
 Exit:
   fs_com_vt.free(buf);
@@ -213,13 +232,49 @@ Exit:
   return code;
 }
 
-uint64_t fs_ext2_read_file(void *dest, uint64_t offset, uint64_t count,
-                           const char *path) {
-  (void)dest, (void)offset, (void)count;
+int fs_ext2_file_size(const char *path, uint64_t *size) {
   struct fs_ext2_inode inode;
-  get_inode(path, &inode);
+  if (get_inode(path, &inode) != 0) {
+    return -1;
+  }
+
+  *size = GET_INODE_SIZE(inode);
 
   return 0;
+}
+
+uint64_t fs_ext2_read_file(void *dest, uint64_t offset, int64_t count,
+                           const char *path) {
+  uint64_t bytes_read = 0;
+
+  struct fs_ext2_inode inode;
+  if (get_inode(path, &inode) != 0) {
+    return 0;
+  }
+
+  char *buf = read_inode(&inode);
+  if (buf == NULL) {
+    bytes_read = 0;
+    goto Exit;
+  }
+
+  uint64_t size = GET_INODE_SIZE(inode);
+  if (count < 0) {
+    count = size - offset;
+  }
+
+  if (offset >= size) {
+    bytes_read = 0;
+    goto Exit;
+  }
+
+  bytes_read = MIN((uint64_t)count, size - offset);
+  fs_com_vt.memcpy(dest, buf + offset, bytes_read);
+  goto Exit;
+
+Exit:
+  fs_com_vt.free(buf);
+  return bytes_read;
 }
 
 enum fs_ext2_mnt_err fs_ext2_init(uint32_t sec_size, uint64_t s) {
@@ -278,13 +333,6 @@ enum fs_ext2_mnt_err fs_ext2_init(uint32_t sec_size, uint64_t s) {
 
     read_from_disk(&root_inode, block_size * block + id * sb.inode_size,
                    sizeof(root_inode));
-
-    printf("%d\n", root_inode.sectors_count);
-  }
-
-  for (long unsigned int i = 0; i < num_bg; i++) {
-    printf("%d\n", bg_descs[i].dirs_count);
-    printf("inode_table: %d\n", bg_descs[i].inode_table);
   }
 
   return FS_EXT2_MNT_ERR_NONE;

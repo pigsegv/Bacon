@@ -153,7 +153,8 @@ enum fs_ext2_incompat {
   FS_EXT_INCOMPAT_META_BG = 0x10,
 };
 
-uint64_t fs_ext2_read_file(void *dest, uint64_t offset, uint64_t count,
+int fs_ext2_file_size(const char *path, uint64_t *size);
+uint64_t fs_ext2_read_file(void *dest, uint64_t offset, int64_t count,
                            const char *path);
 enum fs_ext2_mnt_err fs_ext2_init(uint32_t sector_size, uint64_t sector);
 void fs_ext2_cleanup(void);
